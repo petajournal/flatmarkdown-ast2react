@@ -1,0 +1,57 @@
+{
+  "name": "flatmarkdown-ast2react",
+  "version": "0.1.0",
+  "description": "Render FlatMarkdown AST as native React components with wikilink support.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/petajournal/flatmarkdown-ast2react.git"
+  },
+  "bugs": {
+    "url": "https://github.com/petajournal/flatmarkdown-ast2react/issues"
+  },
+  "homepage": "https://github.com/petajournal/flatmarkdown-ast2react#readme",
+  "keywords": [
+    "flatmarkdown",
+    "ast",
+    "react",
+    "markdown",
+    "renderer"
+  ],
+  "author": "Hidekazu Kubota",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "dependencies": {
+    "flatmarkdown-ast": "^0.1.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.0.0",
+    "@types/react": "^19.0.0",
+    "jsdom": "^26.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.0.0"
+  }
+}
