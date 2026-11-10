@@ -243,7 +243,7 @@ function FmNodeInner({ node, context }: FmNodeProps) {
     case 'footnote_reference':
       return (
         <sup>
-          <a href={`#fn-${n.name}`}>{`[${(n.ix as number) + 1}]`}</a>
+          <a href={`#fn-${n.name}`}>{`[${n.name as string}]`}</a>
         </sup>
       );
 

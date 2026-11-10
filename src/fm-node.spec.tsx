@@ -584,11 +584,11 @@ describe('FmNode', () => {
 
   describe('footnote_reference', () => {
     it('renders superscript link', () => {
-      const { container } = renderNode({ type: 'footnote_reference', name: 'fn1', ref_num: 1, ix: 0 });
+      const { container } = renderNode({ type: 'footnote_reference', name: 'fn1', ref_num: 1, ix: 1 });
       const a = container.querySelector('sup > a');
       expect(a).toBeTruthy();
       expect(a!.getAttribute('href')).toBe('#fn-fn1');
-      expect(a!.textContent).toContain('[1]');
+      expect(a!.textContent).toBe('[fn1]');
     });
 
     // 表示するのは脚注の名前。ixは本文ごとに1から数え直すので、表示に使わない
