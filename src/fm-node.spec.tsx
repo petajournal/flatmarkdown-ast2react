@@ -337,15 +337,18 @@ describe('FmNode', () => {
   });
 
   describe('alert', () => {
-    it('renders div with alert class', () => {
+    // alertは、種類のクラスを持つ引用になる。先頭に既定のタイトルを置く
+    it('renders a block quote with the alert class and the default title', () => {
       const { container } = renderNode({
         type: 'alert',
         alert_type: 'warning',
         title: null,
         children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Careful!' }] }],
       });
-      const div = container.querySelector('div.alert.alert-warning');
-      expect(div).toBeTruthy();
+      const quote = container.querySelector('blockquote.alert.alert-warning');
+      expect(quote).toBeTruthy();
+      expect(quote!.querySelector('p.alert-title')!.textContent).toBe('Warning');
+      expect(quote!.textContent).toContain('Careful!');
     });
   });
 
