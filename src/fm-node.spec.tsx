@@ -676,6 +676,13 @@ describe('FmNode', () => {
       const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
       expect(container.querySelector('a.hashtag')!.getAttribute('href')).toBe('/pages/tags/diary');
     });
+
+    // クラスを指定すると、既定のhashtagの代わりにそれを使う
+    it('uses cssClass of the hashtag options instead of the default class', () => {
+      const ctx = defaultContext({ hashtag: { cssClass: 'hashtag-link' } });
+      const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
+      expect(container.querySelector('a[data-hashtag]')!.className).toBe('hashtag-link');
+    });
   });
 
   describe('footnote_reference', () => {
