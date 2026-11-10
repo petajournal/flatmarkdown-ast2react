@@ -62,10 +62,6 @@ const options: ReactRenderOptions = {
 
 Wikilinks render as `<a href="/wiki/page-name" data-wikilink="true">` by default.
 
-A hashtag is a link to the page of the tag, so it uses the same options.
-`#diary` renders as `<a href="/wiki/diary" class="hashtag">#diary</a>`.
-It has the class `hashtag` instead of `cssClass`, and no `data-wikilink`.
-
 ### Custom Link Component
 
 Pass a custom `linkComponent` for SPA navigation (e.g. react-router's `Link`):
@@ -89,6 +85,14 @@ const options: ReactRenderOptions = {
 ```ts
 interface ReactRenderOptions {
   wikilink?: WikiLinkReactOptions;
+  hashtag?: HashtagReactOptions;
+}
+
+interface HashtagReactOptions {
+  /** Prefix prepended to the tag name for href/to. Default: `hrefPrefix` of the wikilink options. */
+  hrefPrefix?: string;
+  /** CSS class applied to hashtag anchors. Default: 'hashtag' */
+  cssClass?: string;
 }
 
 interface WikiLinkReactOptions {
@@ -100,6 +104,25 @@ interface WikiLinkReactOptions {
   cssClass?: string;
 }
 ```
+
+## Hashtag Options
+
+A hashtag is a link to the page of the tag.
+`#diary` renders as `<a href="diary" class="hashtag" data-hashtag="true">#diary</a>` by default.
+
+```ts
+const options: ReactRenderOptions = {
+  wikilink: { hrefPrefix: '/wiki/' },
+  hashtag: {
+    hrefPrefix: '/wiki/tags/',
+    cssClass: 'hashtag-link',
+  },
+};
+```
+
+- `hrefPrefix` is for an app that keeps the tag pages in their own folder. Without it, a hashtag uses `hrefPrefix` of the wikilink options.
+- `cssClass` replaces the default class `hashtag`.
+- A hashtag uses `linkComponent` of the wikilink options, because both are links to a page.
 
 ## Supported AST Node Types
 
@@ -118,7 +141,7 @@ The elements are the same as in the HTML that the `flatmarkdown` Rust crate writ
 | Node | Rendered as |
 |---|---|
 | `embed` | `<img src alt title>`. The alt is the text of the children. `props` are not used |
-| `hashtag` | `<a href="tag" class="hashtag">#tag</a>` |
+| `hashtag` | `<a href="tag" class="hashtag" data-hashtag="true">#tag</a>` |
 | `wikilink` | `<a href="page" data-wikilink="true">label</a>` |
 | `footnote_reference` | `<sup id="fnref-name" class="footnote-ref"><a href="#fn-name">[name]</a></sup>`. The second reference to the same footnote has the id `fnref-name-2` |
 | `footnote_definition` | `<div id="fn-name" class="footnote">`, with the label `<a href="#fnref-name" class="footnote-label">[name]:</a>` in its first paragraph |

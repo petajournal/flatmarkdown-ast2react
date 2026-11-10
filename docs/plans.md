@@ -23,3 +23,12 @@
 - [x] ノードの属性を、型を通して読む（`as`のキャストをなくす）
 - [x] READMEを直す
 - [x] `flatmarkdown-ast` 0.5.0がnpmに公開されたら、`package-lock.json`を更新する
+
+## ハッシュタグのオプション
+
+PetaJournalはタグのページを「タグのフォルダ」に置けるので、ハッシュタグのリンク先はwikilinkと別に決められる必要がある。本体の`fm-leptos`と同じ形にする。
+
+- [x] ハッシュタグのリンクに`data-hashtag="true"`を付ける
+- [x] `hashtag.hrefPrefix`を足す。指定がなければ、wikilinkの`hrefPrefix`を使う
+- [x] `hashtag.cssClass`を足す。指定がなければ、`hashtag`を使う
+- [x] READMEを直す

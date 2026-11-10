@@ -10,8 +10,19 @@ export interface WikiLinkReactOptions {
   cssClass?: string;
 }
 
+export interface HashtagReactOptions {
+  /**
+   * Prefix prepended to the tag name for href/to.
+   * Default: `hrefPrefix` of the wikilink options.
+   */
+  hrefPrefix?: string;
+  /** CSS class applied to hashtag anchors. Default: 'hashtag' */
+  cssClass?: string;
+}
+
 export interface ReactRenderOptions {
   wikilink?: WikiLinkReactOptions;
+  hashtag?: HashtagReactOptions;
 }
 
 export interface RenderContext {

@@ -1,6 +1,6 @@
 {
   "name": "flatmarkdown-ast2react",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Render FlatMarkdown AST as native React components with wikilink support.",
   "type": "module",
   "main": "./dist/index.cjs",

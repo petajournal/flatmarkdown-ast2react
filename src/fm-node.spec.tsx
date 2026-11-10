@@ -660,6 +660,29 @@ describe('FmNode', () => {
       expect(a!.classList.contains('hashtag')).toBe(true);
       expect(a!.textContent).toBe('#diary');
     });
+
+    // ホストがクリックを見分けられるよう、data-hashtagを付ける
+    it('marks the link with data-hashtag', () => {
+      const { container } = renderNode({ type: 'hashtag', value: 'diary' });
+      expect(container.querySelector('a[data-hashtag="true"]')).toBeTruthy();
+    });
+
+    // タグのページは、wikilinkと別の場所（タグのフォルダ）に置けるので、専用のhrefPrefixを持つ
+    it('uses hrefPrefix of the hashtag options instead of the one of wikilinks', () => {
+      const ctx = defaultContext({
+        wikilink: { hrefPrefix: '/pages/' },
+        hashtag: { hrefPrefix: '/pages/tags/' },
+      });
+      const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
+      expect(container.querySelector('a.hashtag')!.getAttribute('href')).toBe('/pages/tags/diary');
+    });
+
+    // クラスを指定すると、既定のhashtagの代わりにそれを使う
+    it('uses cssClass of the hashtag options instead of the default class', () => {
+      const ctx = defaultContext({ hashtag: { cssClass: 'hashtag-link' } });
+      const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
+      expect(container.querySelector('a[data-hashtag]')!.className).toBe('hashtag-link');
+    });
   });
 
   describe('footnote_reference', () => {
