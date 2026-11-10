@@ -604,6 +604,14 @@ describe('FmNode', () => {
       expect(a!.textContent).toBe('[1]');
       expect(a!.getAttribute('href')).toBe('#fn-__inline_1');
     });
+
+    // idは一意でなければならない。同じ脚注への2つ目の参照は、番号付きのidを持つ
+    it('gives the first reference the plain id and the second its number', () => {
+      const first = renderNode({ type: 'footnote_reference', name: 'note', ref_num: 1, ix: 1 });
+      expect(first.container.querySelector('sup.footnote-ref')!.id).toBe('fnref-note');
+      const second = renderNode({ type: 'footnote_reference', name: 'note', ref_num: 2, ix: 1 });
+      expect(second.container.querySelector('sup.footnote-ref')!.id).toBe('fnref-note-2');
+    });
   });
 
   describe('shortcode', () => {
