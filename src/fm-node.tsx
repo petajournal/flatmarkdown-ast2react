@@ -240,12 +240,17 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       );
     }
 
-    case 'footnote_reference':
+    case 'footnote_reference': {
+      const name = n.name as string;
+      const refNum = n.ref_num as number;
+      // The first reference has no number, so that the label of the definition links to it.
+      const id = refNum === 1 ? `fnref-${name}` : `fnref-${name}-${refNum}`;
       return (
-        <sup>
-          <a href={`#fn-${n.name}`}>{`[${footnoteLabel(n.name as string)}]`}</a>
+        <sup id={id} className="footnote-ref">
+          <a href={`#fn-${name}`}>{`[${footnoteLabel(name)}]`}</a>
         </sup>
       );
+    }
 
     case 'shortcode':
       return <>{n.emoji as string}</>;
