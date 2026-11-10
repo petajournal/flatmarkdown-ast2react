@@ -357,6 +357,15 @@ describe('FmNode', () => {
       });
       expect(container.textContent).toContain('sub');
     });
+
+    // subtextは小さな文字の段落になる
+    it('wraps the children in <p><sub>', () => {
+      const { container } = renderNode({
+        type: 'subtext',
+        children: [{ type: 'text', value: 'sub' }],
+      });
+      expect(container.querySelector('p > sub')!.textContent).toBe('sub');
+    });
   });
 
   // ── Inline Nodes ──
