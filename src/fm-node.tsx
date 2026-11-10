@@ -102,12 +102,18 @@ function FmNodeInner({ node, context }: FmNodeProps) {
         </li>
       );
 
-    case 'table':
+    case 'table': {
+      const tableContext = childContext({ tableAlignments: n.alignments as string[] });
+      const isHeader = (row: AstNode) => row.type === 'table_row' && row.header;
+      const headerRows = children.filter(isHeader);
+      const bodyRows = children.filter(row => !isHeader(row));
       return (
         <table>
-          {renderChildren(children, childContext({ tableAlignments: n.alignments as string[] }))}
+          {headerRows.length > 0 && <thead>{renderChildren(headerRows, tableContext)}</thead>}
+          {bodyRows.length > 0 && <tbody>{renderChildren(bodyRows, tableContext)}</tbody>}
         </table>
       );
+    }
 
     case 'table_row':
       return (
