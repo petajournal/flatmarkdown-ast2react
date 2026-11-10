@@ -253,7 +253,15 @@ function FmNodeInner({ node, context }: FmNodeProps) {
     case 'embed': {
       const baseUrl = context.options.embed?.baseUrl;
       const src = baseUrl ? new URL(node.url, baseUrl).href : node.url;
-      return <img src={src} alt={extractText(node)} title={node.title || undefined} />;
+      return (
+        <img
+          src={src}
+          alt={extractText(node)}
+          title={node.title || undefined}
+          width={node.props?.w as string | undefined}
+          height={node.props?.h as string | undefined}
+        />
+      );
     }
 
     case 'wikilink':
