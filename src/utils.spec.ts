@@ -22,6 +22,17 @@ describe('extractText', () => {
     expect(extractText({ type: 'linebreak' })).toBe('');
   });
 
+  // インラインコードの中身も文字として数える
+  it('includes the literal of inline code', () => {
+    const node: AstNode = {
+      type: 'embed',
+      url: 'a.png',
+      title: '',
+      children: [{ type: 'text', value: 'run ' }, { type: 'code', literal: 'npm test' }],
+    };
+    expect(extractText(node)).toBe('run npm test');
+  });
+
   it('returns empty string for node with no children', () => {
     expect(extractText({ type: 'emph' })).toBe('');
   });
