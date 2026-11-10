@@ -135,12 +135,23 @@ function FmNodeInner({ node, context }: FmNodeProps) {
         <a href={`#fnref-${name}`} className="footnote-label">{`[${footnoteLabel(name)}]:`}</a>
       );
       const [first, ...rest] = children;
+      // The label goes inside the first paragraph, so that the body continues on the same
+      // line without any CSS. A definition that starts with another block keeps the label
+      // in front of it.
+      if (first?.type === 'paragraph') {
+        return (
+          <div className="footnote" id={`fn-${name}`}>
+            <p>
+              {label} {renderChildren(first.children ?? [], context)}
+            </p>
+            {renderChildren(rest, context)}
+          </div>
+        );
+      }
       return (
         <div className="footnote" id={`fn-${name}`}>
-          <p>
-            {label} {renderChildren((first as { children?: AstNode[] }).children ?? [], context)}
-          </p>
-          {renderChildren(rest, context)}
+          {label}
+          {renderChildren(children, context)}
         </div>
       );
     }
