@@ -40,8 +40,8 @@ function isHeaderRow(row: AstNode) {
 }
 
 interface PageLinkProps {
-  /** The page path, without the prefix of the options */
-  url: string;
+  /** The link target, with the prefix of the options */
+  href: string;
   className?: string;
   /** true for a wikilink; a hashtag is told apart by its class */
   wikilink?: boolean;
@@ -51,9 +51,8 @@ interface PageLinkProps {
 
 // A link to a page: a wikilink or a hashtag. Both use the wikilink options, because a
 // hashtag has the same meaning as a wikilink to the page of the tag.
-function PageLink({ url, className, wikilink = false, context, children }: PageLinkProps) {
+function PageLink({ href, className, wikilink = false, context, children }: PageLinkProps) {
   const options = context.options.wikilink;
-  const href = (options?.hrefPrefix ?? '') + url;
   const marker = wikilink ? { 'data-wikilink': 'true' } : { 'data-hashtag': 'true' };
   const LinkComp = options?.linkComponent;
   if (LinkComp) {
@@ -258,7 +257,7 @@ function FmNodeInner({ node, context }: FmNodeProps) {
     case 'wikilink':
       return (
         <PageLink
-          url={node.url}
+          href={(context.options.wikilink?.hrefPrefix ?? '') + node.url}
           className={context.options.wikilink?.cssClass || undefined}
           wikilink
           context={context}
@@ -267,12 +266,17 @@ function FmNodeInner({ node, context }: FmNodeProps) {
         </PageLink>
       );
 
-    case 'hashtag':
+    case 'hashtag': {
+      // A tag page can live in its own folder, so a hashtag has its own prefix. Without one,
+      // it links where a wikilink to a page of that name links.
+      const prefix =
+        context.options.hashtag?.hrefPrefix ?? context.options.wikilink?.hrefPrefix ?? '';
       return (
-        <PageLink url={node.value} className="hashtag" context={context}>
+        <PageLink href={prefix + node.value} className="hashtag" context={context}>
           {`#${node.value}`}
         </PageLink>
       );
+    }
 
     case 'footnote_reference': {
       // The first reference has no number, so that the label of the definition links to it.
