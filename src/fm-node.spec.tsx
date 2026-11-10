@@ -660,6 +660,12 @@ describe('FmNode', () => {
       expect(a!.classList.contains('hashtag')).toBe(true);
       expect(a!.textContent).toBe('#diary');
     });
+
+    // ホストがクリックを見分けられるよう、data-hashtagを付ける
+    it('marks the link with data-hashtag', () => {
+      const { container } = renderNode({ type: 'hashtag', value: 'diary' });
+      expect(container.querySelector('a[data-hashtag="true"]')).toBeTruthy();
+    });
   });
 
   describe('footnote_reference', () => {
