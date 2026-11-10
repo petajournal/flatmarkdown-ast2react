@@ -98,7 +98,7 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       return (
         <li>
           <input type="checkbox" checked={n.symbol != null} disabled readOnly />
-          {renderItemChildren(children, context, true)}
+          {renderItemChildren(children, context, context.inTightList)}
         </li>
       );
 
