@@ -62,25 +62,6 @@ const options: ReactRenderOptions = {
 
 Wikilinks render as `<a href="/wiki/page-name" data-wikilink="true">` by default.
 
-## Hashtag Options
-
-A hashtag is a link to the page of the tag.
-`#diary` renders as `<a href="diary" class="hashtag" data-hashtag="true">#diary</a>` by default.
-
-```ts
-const options: ReactRenderOptions = {
-  wikilink: { hrefPrefix: '/wiki/' },
-  hashtag: {
-    hrefPrefix: '/wiki/tags/',
-    cssClass: 'hashtag-link',
-  },
-};
-```
-
-- `hrefPrefix` is for an app that keeps the tag pages in their own folder. Without it, a hashtag uses `hrefPrefix` of the wikilink options.
-- `cssClass` replaces the default class `hashtag`.
-- A hashtag uses `linkComponent` of the wikilink options, because both are links to a page.
-
 ### Custom Link Component
 
 Pass a custom `linkComponent` for SPA navigation (e.g. react-router's `Link`):
@@ -123,6 +104,25 @@ interface WikiLinkReactOptions {
   cssClass?: string;
 }
 ```
+
+## Hashtag Options
+
+A hashtag is a link to the page of the tag.
+`#diary` renders as `<a href="diary" class="hashtag" data-hashtag="true">#diary</a>` by default.
+
+```ts
+const options: ReactRenderOptions = {
+  wikilink: { hrefPrefix: '/wiki/' },
+  hashtag: {
+    hrefPrefix: '/wiki/tags/',
+    cssClass: 'hashtag-link',
+  },
+};
+```
+
+- `hrefPrefix` is for an app that keeps the tag pages in their own folder. Without it, a hashtag uses `hrefPrefix` of the wikilink options.
+- `cssClass` replaces the default class `hashtag`.
+- A hashtag uses `linkComponent` of the wikilink options, because both are links to a page.
 
 ## Supported AST Node Types
 
