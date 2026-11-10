@@ -167,7 +167,7 @@ function FmNodeInner({ node, context }: FmNodeProps) {
     case 'alert':
       return (
         <blockquote className={`alert alert-${n.alert_type}`}>
-          <p className="alert-title">{ALERT_TITLES[n.alert_type as string]}</p>
+          <p className="alert-title">{(n.title as string | null) ?? ALERT_TITLES[n.alert_type as string]}</p>
           {renderChildren(children, context)}
         </blockquote>
       );
