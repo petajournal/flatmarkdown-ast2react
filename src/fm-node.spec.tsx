@@ -663,12 +663,12 @@ describe('FmNode', () => {
       expect(code!.textContent).toBe('E=mc^2');
     });
 
-    it('renders inline math in <code>', () => {
-      const { container } = renderNode({ type: 'math', dollar_math: true, display_math: false, literal: 'x^2' });
-      const code = container.querySelector('code.math.math-inline');
-      expect(code).toBeTruthy();
-      expect(code!.textContent).toBe('x^2');
-      expect(container.querySelector('pre')).toBeNull();
+    // 数式は常にインライン。mathクラスの<span>になる
+    it('renders math in <span class="math">', () => {
+      const { container } = renderNode({ type: 'math', literal: 'x^2' });
+      const span = container.querySelector('span.math');
+      expect(span).toBeTruthy();
+      expect(span!.textContent).toBe('x^2');
     });
   });
 
