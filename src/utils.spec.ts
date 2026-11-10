@@ -41,6 +41,11 @@ describe('extractText', () => {
     expect(extractText(node)).toBe('#diary');
   });
 
+  // 生のインラインHTMLは、文字として数える
+  it('includes raw inline HTML as text', () => {
+    expect(extractText({ type: 'html_inline', value: '<b>' })).toBe('<b>');
+  });
+
   it('returns empty string for node with no children', () => {
     expect(extractText({ type: 'emph' })).toBe('');
   });
