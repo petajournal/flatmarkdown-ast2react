@@ -232,6 +232,21 @@ describe('FmNode', () => {
       const checkbox = container.querySelector('input[type="checkbox"]') as HTMLInputElement;
       expect(checkbox.checked).toBe(true);
     });
+
+    // タスクの段落の<p>も、リストがtightのときだけ外す
+    it('keeps <p> in a loose list', () => {
+      const { container } = renderNode({
+        type: 'list',
+        list_type: 'bullet',
+        start: 1,
+        tight: false,
+        delimiter: 'period',
+        children: [
+          { type: 'task_item', symbol: null, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'todo' }] }] },
+        ],
+      });
+      expect(container.querySelector('li > p')!.textContent).toBe('todo');
+    });
   });
 
   describe('table', () => {
