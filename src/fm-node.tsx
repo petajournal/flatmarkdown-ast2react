@@ -301,7 +301,8 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       return <span dangerouslySetInnerHTML={{ __html: n.value as string }} />;
 
     default:
-      return null;
+      // A node of a newer parser. Its children are rendered, so that the text inside is not lost.
+      return <>{renderChildren(children, context)}</>;
   }
 }
 
