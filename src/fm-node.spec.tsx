@@ -571,6 +571,15 @@ describe('FmNode', () => {
       expect(img!.getAttribute('alt')).toBe('alt text');
       expect(img!.getAttribute('title')).toBe('Photo');
     });
+
+    // ページからの相対パスで書かれた画像は、baseUrlから解決する。ページと別のアドレスで動くアプリのため
+    it('resolves a relative URL against baseUrl of the embed options', () => {
+      const ctx = defaultContext({ embed: { baseUrl: 'http://journal.test:9000/pages/' } });
+      const { container } = renderNode({ type: 'embed', url: '../assets/pic.png', title: '' }, ctx);
+      expect(container.querySelector('img')!.getAttribute('src')).toBe(
+        'http://journal.test:9000/assets/pic.png',
+      );
+    });
   });
 
   describe('wikilink', () => {
