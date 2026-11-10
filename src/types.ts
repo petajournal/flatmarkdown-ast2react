@@ -18,6 +18,9 @@ export interface RenderContext {
   inHeaderRow: boolean;
   tableAlignments: string[];
   cellIndex: number;
+  /** true inside a tight list; an item then drops <p> around its own paragraphs */
+  inTightList: boolean;
+  /** true only for a paragraph that is a direct child of an item in a tight list */
   tightList: boolean;
 }
 
@@ -27,6 +30,7 @@ export function defaultContext(options: ReactRenderOptions = {}): RenderContext 
     inHeaderRow: false,
     tableAlignments: [],
     cellIndex: 0,
+    inTightList: false,
     tightList: false,
   };
 }

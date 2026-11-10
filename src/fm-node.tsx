@@ -14,6 +14,18 @@ function renderChildren(children: AstNode[], context: RenderContext) {
   ));
 }
 
+// Renders the children of a list item. Only a paragraph that is a direct child
+// loses its <p>; a paragraph deeper (in a block quote, for example) keeps it.
+function renderItemChildren(children: AstNode[], context: RenderContext, tight: boolean) {
+  return children.map((child, i) => (
+    <FmNode
+      key={i}
+      node={child}
+      context={{ ...context, tightList: tight && child.type === 'paragraph' }}
+    />
+  ));
+}
+
 function FmNodeInner({ node, context }: FmNodeProps) {
   const children = useMemo(
     () => ('children' in node && node.children ? (node.children as AstNode[]) : []),
@@ -60,7 +72,7 @@ function FmNodeInner({ node, context }: FmNodeProps) {
     case 'list': {
       const isOrdered = n.list_type === 'ordered';
       const start = n.start as number | null;
-      const listContext = childContext({ tightList: n.tight as boolean });
+      const listContext = childContext({ inTightList: n.tight as boolean });
       if (isOrdered) {
         return (
           <ol start={start != null && start !== 1 ? start : undefined}>
@@ -72,13 +84,13 @@ function FmNodeInner({ node, context }: FmNodeProps) {
     }
 
     case 'item':
-      return <li>{renderChildren(children, context)}</li>;
+      return <li>{renderItemChildren(children, context, context.inTightList)}</li>;
 
     case 'task_item':
       return (
         <li>
           <input type="checkbox" checked={n.symbol != null} disabled readOnly />
-          {renderChildren(children, childContext({ tightList: true }))}
+          {renderItemChildren(children, context, true)}
         </li>
       );
 
