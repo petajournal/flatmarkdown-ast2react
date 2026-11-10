@@ -405,6 +405,15 @@ describe('FmNode', () => {
     });
   });
 
+  describe('unknown node', () => {
+    // 新しい版のパーサーが出す未知のノードは、子だけを描画する。中の文字を失わないため
+    it('renders the children of a node with an unknown type', () => {
+      const node = { type: 'future_node', children: [{ type: 'text', value: 'kept' }] } as unknown as AstNode;
+      const { container } = renderNode(node);
+      expect(container.textContent).toBe('kept');
+    });
+  });
+
   // ── Inline Nodes ──
 
   describe('text', () => {
