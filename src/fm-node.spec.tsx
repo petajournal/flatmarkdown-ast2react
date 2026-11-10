@@ -566,6 +566,20 @@ describe('FmNode', () => {
       const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
       expect(container.querySelector('a.hashtag')!.getAttribute('href')).toBe('/wiki/diary');
     });
+
+    // SPAの遷移のため、wikilinkのlinkComponentを使う
+    it('uses linkComponent of the wikilink options', () => {
+      function CustomLink({ to, children, ...rest }: { to: string; children?: React.ReactNode; [k: string]: unknown }) {
+        return <a href={to} data-custom="true" {...rest}>{children}</a>;
+      }
+      const ctx = defaultContext({ wikilink: { linkComponent: CustomLink, hrefPrefix: '/p/' } });
+      const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
+      const a = container.querySelector('a[data-custom]');
+      expect(a).toBeTruthy();
+      expect(a!.getAttribute('href')).toBe('/p/diary');
+      expect(a!.classList.contains('hashtag')).toBe(true);
+      expect(a!.textContent).toBe('#diary');
+    });
   });
 
   describe('footnote_reference', () => {
