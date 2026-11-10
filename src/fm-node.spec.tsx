@@ -666,6 +666,16 @@ describe('FmNode', () => {
       const { container } = renderNode({ type: 'hashtag', value: 'diary' });
       expect(container.querySelector('a[data-hashtag="true"]')).toBeTruthy();
     });
+
+    // タグのページは、wikilinkと別の場所（タグのフォルダ）に置けるので、専用のhrefPrefixを持つ
+    it('uses hrefPrefix of the hashtag options instead of the one of wikilinks', () => {
+      const ctx = defaultContext({
+        wikilink: { hrefPrefix: '/pages/' },
+        hashtag: { hrefPrefix: '/pages/tags/' },
+      });
+      const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
+      expect(container.querySelector('a.hashtag')!.getAttribute('href')).toBe('/pages/tags/diary');
+    });
   });
 
   describe('footnote_reference', () => {
