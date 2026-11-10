@@ -32,3 +32,12 @@ PetaJournalはタグのページを「タグのフォルダ」に置けるので
 - [x] `hashtag.hrefPrefix`を足す。指定がなければ、wikilinkの`hrefPrefix`を使う
 - [x] `hashtag.cssClass`を足す。指定がなければ、`hashtag`を使う
 - [x] READMEを直す
+
+## 画像（embed）のオプション
+
+PetaJournalは画像を`../assets/名前`という、ページからの相対パスで書く。ページと別のアドレスで動くアプリ（`ext-web-app/todo`）では、このパスがアプリのアドレスに解決され、画像が出ない。
+
+- [x] `embed.baseUrl`を足す。画像のURLを、このURLから解決する
+- [x] `props`の`w`と`h`を、画像の幅と高さにする。本体の`fm-leptos`と同じ
+- [x] 正の整数でない`w`と`h`は使わない
+- [x] READMEを直す

@@ -86,6 +86,12 @@ const options: ReactRenderOptions = {
 interface ReactRenderOptions {
   wikilink?: WikiLinkReactOptions;
   hashtag?: HashtagReactOptions;
+  embed?: EmbedReactOptions;
+}
+
+interface EmbedReactOptions {
+  /** An absolute URL that the URL of an embed is resolved against. Default: none */
+  baseUrl?: string;
 }
 
 interface HashtagReactOptions {
@@ -124,6 +130,23 @@ const options: ReactRenderOptions = {
 - `cssClass` replaces the default class `hashtag`.
 - A hashtag uses `linkComponent` of the wikilink options, because both are links to a page.
 
+## Embed Options
+
+An embed (`![alt](url)`) renders as `<img>`.
+`w` and `h` of its properties become the width and the height: `![pic](pic.png#w=300&h=240)` renders as `<img src="pic.png" alt="pic" width="300" height="240">`.
+A `w` or an `h` that is not a positive whole number is ignored.
+
+```ts
+const options: ReactRenderOptions = {
+  embed: { baseUrl: 'https://example.com/pages/' },
+};
+```
+
+- `baseUrl` is for an app that runs at another address than the pages. The URL of an embed is resolved against it, as a browser resolves a relative URL against the address of a page. With the options above, `../assets/pic.png` becomes `https://example.com/assets/pic.png`.
+- An absolute URL of an embed stays as it is.
+- `baseUrl` must be an absolute URL.
+- Without `baseUrl`, the URL is used as written.
+
 ## Supported AST Node Types
 
 37 node types, as flatmarkdown 0.5.0 makes them. They are defined in [SPEC_AST.md](https://github.com/petajournal/flatmarkdown/blob/main/SPEC_AST.md).
@@ -140,7 +163,7 @@ The elements are the same as in the HTML that the `flatmarkdown` Rust crate writ
 
 | Node | Rendered as |
 |---|---|
-| `embed` | `<img src alt title>`. The alt is the text of the children. `props` are not used |
+| `embed` | `<img src alt title width height>`. The alt is the text of the children. The width and the height come from `w` and `h` of `props` |
 | `hashtag` | `<a href="tag" class="hashtag" data-hashtag="true">#tag</a>` |
 | `wikilink` | `<a href="page" data-wikilink="true">label</a>` |
 | `footnote_reference` | `<sup id="fnref-name" class="footnote-ref"><a href="#fn-name">[name]</a></sup>`. The second reference to the same footnote has the id `fnref-name-2` |
