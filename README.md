@@ -62,6 +62,10 @@ const options: ReactRenderOptions = {
 
 Wikilinks render as `<a href="/wiki/page-name" data-wikilink="true">` by default.
 
+A hashtag is a link to the page of the tag, so it uses the same options.
+`#diary` renders as `<a href="/wiki/diary" class="hashtag">#diary</a>`.
+It has the class `hashtag` instead of `cssClass`, and no `data-wikilink`.
+
 ### Custom Link Component
 
 Pass a custom `linkComponent` for SPA navigation (e.g. react-router's `Link`):
@@ -99,11 +103,36 @@ interface WikiLinkReactOptions {
 
 ## Supported AST Node Types
 
-46 node types total, matching the `flatmarkdown` Rust crate output.
+37 node types, as flatmarkdown 0.5.0 makes them. They are defined in [SPEC_AST.md](https://github.com/petajournal/flatmarkdown/blob/main/SPEC_AST.md).
 
-**Block (23):** `document`, `paragraph`, `heading`, `code_block`, `block_quote`, `multiline_block_quote`, `list`, `item`, `task_item`, `table`, `table_row`, `table_cell`, `thematic_break`, `html_block`, `footnote_definition`, `description_list`, `description_item`, `description_term`, `description_details`, `alert`, `front_matter`, `heex_block`, `subtext`
+**Block (17):** `document`, `paragraph`, `heading`, `code_block`, `block_quote`, `multiline_block_quote`, `list`, `item`, `task_item`, `table`, `table_row`, `table_cell`, `thematic_break`, `html_block`, `footnote_definition`, `alert`, `subtext`
 
-**Inline (23):** `text`, `softbreak`, `linebreak`, `emph`, `strong`, `strikethrough`, `underline`, `highlight`, `superscript`, `subscript`, `spoilered_text`, `code`, `link`, `image`, `footnote_reference`, `shortcode`, `math`, `html_inline`, `heex_inline`, `raw`, `escaped`, `escaped_tag`, `wikilink`
+**Inline (20):** `text`, `softbreak`, `linebreak`, `emph`, `strong`, `strikethrough`, `underline`, `highlight`, `superscript`, `subscript`, `spoilered_text`, `code`, `link`, `embed`, `wikilink`, `footnote_reference`, `shortcode`, `math`, `html_inline`, `hashtag`
+
+A node with an unknown type renders its children only. So the text inside a node of a newer parser is not lost.
+
+## Rendered HTML
+
+The elements are the same as in the HTML that the `flatmarkdown` Rust crate writes.
+
+| Node | Rendered as |
+|---|---|
+| `embed` | `<img src alt title>`. The alt is the text of the children. `props` are not used |
+| `hashtag` | `<a href="tag" class="hashtag">#tag</a>` |
+| `wikilink` | `<a href="page" data-wikilink="true">label</a>` |
+| `footnote_reference` | `<sup id="fnref-name" class="footnote-ref"><a href="#fn-name">[name]</a></sup>`. The second reference to the same footnote has the id `fnref-name-2` |
+| `footnote_definition` | `<div id="fn-name" class="footnote">`, with the label `<a href="#fnref-name" class="footnote-label">[name]:</a>` in its first paragraph |
+| `alert` | `<blockquote class="alert alert-note"><p class="alert-title">Note</p>…</blockquote>` |
+| `subtext` | `<p><sub>…</sub></p>` |
+| `math` | `<span class="math">…</span>` |
+| `spoilered_text` | `<span class="spoiler">…</span>` |
+| `code_block` | `<pre><code class="language-rust">`. No class for the info `text` |
+| `table` | `<table>` with `<thead>` and `<tbody>`. A cell has `align` when its column has an alignment |
+| `task_item` | `<li>` with a disabled checkbox |
+
+An inline footnote (`^[text]`) has a name that the parser made, such as `__inline_1`. Its number is shown instead: `[1]`.
+
+`html_block` and `html_inline` are written into a `<span>` as raw HTML. Render only content that you trust.
 
 ## Build
 

@@ -18,8 +18,32 @@ describe('extractText', () => {
     expect(extractText(node)).toBe('foobar');
   });
 
-  it('returns empty string for nodes without text', () => {
-    expect(extractText({ type: 'linebreak' })).toBe('');
+  // 改行は空白になる。前後の単語がつながらないようにするため
+  it('turns a line break into a space', () => {
+    expect(extractText({ type: 'softbreak' })).toBe(' ');
+    expect(extractText({ type: 'linebreak' })).toBe(' ');
+  });
+
+  // インラインコードの中身も文字として数える
+  it('includes the literal of inline code', () => {
+    const node: AstNode = {
+      type: 'embed',
+      url: 'a.png',
+      title: '',
+      children: [{ type: 'text', value: 'run ' }, { type: 'code', literal: 'npm test' }],
+    };
+    expect(extractText(node)).toBe('run npm test');
+  });
+
+  // ハッシュタグは、#付きのタグ名になる
+  it('writes a hashtag with its hash sign', () => {
+    const node: AstNode = { type: 'emph', children: [{ type: 'hashtag', value: 'diary' }] };
+    expect(extractText(node)).toBe('#diary');
+  });
+
+  // 生のインラインHTMLは、文字として数える
+  it('includes raw inline HTML as text', () => {
+    expect(extractText({ type: 'html_inline', value: '<b>' })).toBe('<b>');
   });
 
   it('returns empty string for node with no children', () => {

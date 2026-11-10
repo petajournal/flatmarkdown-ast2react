@@ -1,7 +1,16 @@
-import { memo, createElement, useMemo } from 'react';
-import type { AstNode } from 'flatmarkdown-ast';
+import { memo, createElement } from 'react';
+import type { ReactNode } from 'react';
+import type { AlertNode, AstNode } from 'flatmarkdown-ast';
 import type { RenderContext } from './types';
-import { extractText } from './utils';
+import { extractText, footnoteLabel } from './utils';
+
+const ALERT_TITLES: Record<AlertNode['alert_type'], string> = {
+  note: 'Note',
+  tip: 'Tip',
+  important: 'Important',
+  warning: 'Warning',
+  caution: 'Caution',
+};
 
 interface FmNodeProps {
   node: AstNode;
@@ -16,27 +25,53 @@ function renderChildren(children: AstNode[], context: RenderContext) {
 
 // Renders the children of a list item. Only a paragraph that is a direct child
 // loses its <p>; a paragraph deeper (in a block quote, for example) keeps it.
-function renderItemChildren(children: AstNode[], context: RenderContext, tight: boolean) {
+function renderItemChildren(children: AstNode[], context: RenderContext) {
   return children.map((child, i) => (
     <FmNode
       key={i}
       node={child}
-      context={{ ...context, tightList: tight && child.type === 'paragraph' }}
+      context={{ ...context, tightList: context.inTightList && child.type === 'paragraph' }}
     />
   ));
 }
 
-function FmNodeInner({ node, context }: FmNodeProps) {
-  const children = useMemo(
-    () => ('children' in node && node.children ? (node.children as AstNode[]) : []),
-    [node],
-  );
+function isHeaderRow(row: AstNode) {
+  return row.type === 'table_row' && row.header;
+}
 
-  const n = node as unknown as Record<string, unknown>;
+interface PageLinkProps {
+  /** The page path, without the prefix of the options */
+  url: string;
+  className?: string;
+  /** true for a wikilink; a hashtag is told apart by its class */
+  wikilink?: boolean;
+  context: RenderContext;
+  children: ReactNode;
+}
 
-  function childContext(overrides: Partial<RenderContext>): RenderContext {
-    return { ...context, ...overrides };
+// A link to a page: a wikilink or a hashtag. Both use the wikilink options, because a
+// hashtag has the same meaning as a wikilink to the page of the tag.
+function PageLink({ url, className, wikilink = false, context, children }: PageLinkProps) {
+  const options = context.options.wikilink;
+  const href = (options?.hrefPrefix ?? '') + url;
+  const marker = wikilink ? { 'data-wikilink': 'true' } : {};
+  const LinkComp = options?.linkComponent;
+  if (LinkComp) {
+    return (
+      <LinkComp to={href} className={className ?? null} {...marker}>
+        {children}
+      </LinkComp>
+    );
   }
+  return (
+    <a href={href} className={className} {...marker}>
+      {children}
+    </a>
+  );
+}
+
+function FmNodeInner({ node, context }: FmNodeProps) {
+  const children: AstNode[] = ('children' in node && node.children) || [];
 
   switch (node.type) {
     // ── Block Nodes ──
@@ -50,17 +85,15 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       }
       return <p>{renderChildren(children, context)}</p>;
 
-    case 'heading': {
-      const level = n.level as number;
-      return createElement(`h${level}`, null, ...renderChildren(children, context));
-    }
+    case 'heading':
+      return createElement(`h${node.level}`, null, ...renderChildren(children, context));
 
     case 'code_block': {
-      const info = n.info as string | undefined;
-      const className = info ? `language-${info}` : undefined;
+      // "text" is the info of a fenced block without a language. It is not a language.
+      const className = node.info && node.info !== 'text' ? `language-${node.info}` : undefined;
       return (
         <pre>
-          <code className={className}>{n.literal as string}</code>
+          <code className={className}>{node.literal}</code>
         </pre>
       );
     }
@@ -70,12 +103,10 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       return <blockquote>{renderChildren(children, context)}</blockquote>;
 
     case 'list': {
-      const isOrdered = n.list_type === 'ordered';
-      const start = n.start as number | null;
-      const listContext = childContext({ inTightList: n.tight as boolean });
-      if (isOrdered) {
+      const listContext = { ...context, inTightList: node.tight };
+      if (node.list_type === 'ordered') {
         return (
-          <ol start={start != null && start !== 1 ? start : undefined}>
+          <ol start={node.start !== 1 ? node.start : undefined}>
             {renderChildren(children, listContext)}
           </ol>
         );
@@ -84,22 +115,27 @@ function FmNodeInner({ node, context }: FmNodeProps) {
     }
 
     case 'item':
-      return <li>{renderItemChildren(children, context, context.inTightList)}</li>;
+      return <li>{renderItemChildren(children, context)}</li>;
 
     case 'task_item':
       return (
         <li>
-          <input type="checkbox" checked={n.symbol != null} disabled readOnly />
-          {renderItemChildren(children, context, true)}
+          <input type="checkbox" checked={node.symbol != null} disabled readOnly />
+          {renderItemChildren(children, context)}
         </li>
       );
 
-    case 'table':
+    case 'table': {
+      const tableContext = { ...context, tableAlignments: node.alignments };
+      const headerRows = children.filter(isHeaderRow);
+      const bodyRows = children.filter(row => !isHeaderRow(row));
       return (
         <table>
-          {renderChildren(children, childContext({ tableAlignments: n.alignments as string[] }))}
+          {headerRows.length > 0 && <thead>{renderChildren(headerRows, tableContext)}</thead>}
+          {bodyRows.length > 0 && <tbody>{renderChildren(bodyRows, tableContext)}</tbody>}
         </table>
       );
+    }
 
     case 'table_row':
       return (
@@ -108,7 +144,7 @@ function FmNodeInner({ node, context }: FmNodeProps) {
             <FmNode
               key={i}
               node={child}
-              context={childContext({ inHeaderRow: n.header as boolean, cellIndex: i })}
+              context={{ ...context, inHeaderRow: node.header, cellIndex: i }}
             />
           ))}
         </tr>
@@ -116,7 +152,7 @@ function FmNodeInner({ node, context }: FmNodeProps) {
 
     case 'table_cell': {
       const alignment = context.tableAlignments[context.cellIndex];
-      const align = (alignment && alignment !== 'none' ? alignment : undefined) as 'left' | 'center' | 'right' | undefined;
+      const align = alignment && alignment !== 'none' ? alignment : undefined;
       if (context.inHeaderRow) {
         return <th align={align}>{renderChildren(children, context)}</th>;
       }
@@ -127,45 +163,53 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       return <hr />;
 
     case 'html_block':
-      return <span dangerouslySetInnerHTML={{ __html: n.literal as string }} />;
+      return <span dangerouslySetInnerHTML={{ __html: node.literal }} />;
 
-    case 'footnote_definition':
+    case 'footnote_definition': {
+      const label = (
+        <a href={`#fnref-${node.name}`} className="footnote-label">{`[${footnoteLabel(node.name)}]:`}</a>
+      );
+      const [first, ...rest] = children;
+      // The label goes inside the first paragraph, so that the body continues on the same
+      // line without any CSS. A definition that starts with another block keeps the label
+      // in front of it.
+      if (first?.type === 'paragraph') {
+        return (
+          <div className="footnote" id={`fn-${node.name}`}>
+            <p>
+              {label} {renderChildren(first.children ?? [], context)}
+            </p>
+            {renderChildren(rest, context)}
+          </div>
+        );
+      }
       return (
-        <div className="footnote" id={`fn-${n.name}`}>
+        <div className="footnote" id={`fn-${node.name}`}>
+          {label}
           {renderChildren(children, context)}
         </div>
       );
-
-    case 'description_list':
-      return <dl>{renderChildren(children, context)}</dl>;
-
-    case 'description_item':
-      return <>{renderChildren(children, context)}</>;
-
-    case 'description_term':
-      return <dt>{renderChildren(children, context)}</dt>;
-
-    case 'description_details':
-      return <dd>{renderChildren(children, context)}</dd>;
+    }
 
     case 'alert':
       return (
-        <div className={`alert alert-${n.alert_type}`}>
+        <blockquote className={`alert alert-${node.alert_type}`}>
+          <p className="alert-title">{node.title ?? ALERT_TITLES[node.alert_type]}</p>
           {renderChildren(children, context)}
-        </div>
+        </blockquote>
       );
 
-    case 'front_matter':
-      return null;
-
-    case 'heex_block':
     case 'subtext':
-      return <>{renderChildren(children, context)}</>;
+      return (
+        <p>
+          <sub>{renderChildren(children, context)}</sub>
+        </p>
+      );
 
     // ── Inline Nodes ──
 
     case 'text':
-      return <>{n.value as string}</>;
+      return <>{node.value}</>;
 
     case 'softbreak':
       return <>{'\n'}</>;
@@ -198,78 +242,60 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       return <span className="spoiler">{renderChildren(children, context)}</span>;
 
     case 'code':
-      return <code>{n.literal as string}</code>;
+      return <code>{node.literal}</code>;
 
     case 'link':
       return (
-        <a href={n.url as string} title={(n.title as string) || undefined}>
+        <a href={node.url} title={node.title || undefined}>
           {renderChildren(children, context)}
         </a>
       );
 
-    case 'image': {
-      const alt = extractText(node);
-      return (
-        <img
-          src={n.url as string}
-          alt={alt}
-          title={(n.title as string) || undefined}
-        />
-      );
-    }
+    // `props` are not used. How an app shows a video or a PDF differs from app to app.
+    case 'embed':
+      return <img src={node.url} alt={extractText(node)} title={node.title || undefined} />;
 
-    case 'wikilink': {
-      const prefix = context.options.wikilink?.hrefPrefix ?? '';
-      const href = prefix + (n.url as string);
-      const cssClass = context.options.wikilink?.cssClass || undefined;
-      const LinkComp = context.options.wikilink?.linkComponent;
-      if (LinkComp) {
-        return (
-          <LinkComp to={href} className={cssClass ?? null} data-wikilink="true">
-            {renderChildren(children, context)}
-          </LinkComp>
-        );
-      }
+    case 'wikilink':
       return (
-        <a href={href} className={cssClass} data-wikilink="true">
+        <PageLink
+          url={node.url}
+          className={context.options.wikilink?.cssClass || undefined}
+          wikilink
+          context={context}
+        >
           {renderChildren(children, context)}
-        </a>
+        </PageLink>
       );
-    }
 
-    case 'footnote_reference':
+    case 'hashtag':
       return (
-        <sup>
-          <a href={`#fn-${n.name}`}>{`[${(n.ix as number) + 1}]`}</a>
+        <PageLink url={node.value} className="hashtag" context={context}>
+          {`#${node.value}`}
+        </PageLink>
+      );
+
+    case 'footnote_reference': {
+      // The first reference has no number, so that the label of the definition links to it.
+      const id = node.ref_num === 1 ? `fnref-${node.name}` : `fnref-${node.name}-${node.ref_num}`;
+      return (
+        <sup id={id} className="footnote-ref">
+          <a href={`#fn-${node.name}`}>{`[${footnoteLabel(node.name)}]`}</a>
         </sup>
       );
+    }
 
     case 'shortcode':
-      return <>{n.emoji as string}</>;
+      return <>{node.emoji}</>;
 
     case 'math':
-      if (n.display_math) {
-        return (
-          <pre>
-            <code className="math math-display">{n.literal as string}</code>
-          </pre>
-        );
-      }
-      return <code className="math math-inline">{n.literal as string}</code>;
+      return <span className="math">{node.literal}</span>;
 
     case 'html_inline':
-    case 'heex_inline':
-    case 'raw':
-      return <span dangerouslySetInnerHTML={{ __html: n.value as string }} />;
-
-    case 'escaped':
-      return null;
-
-    case 'escaped_tag':
-      return <>{n.value as string}</>;
+      return <span dangerouslySetInnerHTML={{ __html: node.value }} />;
 
     default:
-      return null;
+      // A node of a newer parser. Its children are rendered, so that the text inside is not lost.
+      return <>{renderChildren(children, context)}</>;
   }
 }
 

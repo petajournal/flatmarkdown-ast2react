@@ -49,7 +49,6 @@ describe('FmNode', () => {
         const { container } = renderNode({
           type: 'heading',
           level,
-          setext: false,
           children: [{ type: 'text', value: `Heading ${level}` }],
         });
         const h = container.querySelector(`h${level}`);
@@ -77,6 +76,12 @@ describe('FmNode', () => {
       const { container } = renderNode({ type: 'code_block', fenced: true, info: '', literal: 'x' });
       const code = container.querySelector('code');
       expect(code!.className).toBe('');
+    });
+
+    // 言語を書かないコードブロックのinfoは"text"になる。これは言語ではないので、クラスを付けない
+    it('no class when info is the default "text"', () => {
+      const { container } = renderNode({ type: 'code_block', fenced: true, info: 'text', literal: 'x' });
+      expect(container.querySelector('code')!.className).toBe('');
     });
   });
 
@@ -106,11 +111,11 @@ describe('FmNode', () => {
       const { container } = renderNode({
         type: 'list',
         list_type: 'bullet',
-        start: null,
+        start: 1,
         tight: false,
-        delimiter: '',
+        delimiter: 'period',
         children: [
-          { type: 'item', list_type: 'bullet', start: 0, tight: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'item1' }] }] },
+          { type: 'item', list_type: 'bullet', start: 0, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'item1' }] }] },
         ],
       });
       expect(container.querySelector('ul')).toBeTruthy();
@@ -123,9 +128,9 @@ describe('FmNode', () => {
         list_type: 'ordered',
         start: 1,
         tight: false,
-        delimiter: '.',
+        delimiter: 'period',
         children: [
-          { type: 'item', list_type: 'ordered', start: 1, tight: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'first' }] }] },
+          { type: 'item', list_type: 'ordered', start: 1, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'first' }] }] },
         ],
       });
       expect(container.querySelector('ol')).toBeTruthy();
@@ -137,24 +142,24 @@ describe('FmNode', () => {
         list_type: 'ordered',
         start: 3,
         tight: false,
-        delimiter: '.',
+        delimiter: 'period',
         children: [
-          { type: 'item', list_type: 'ordered', start: 3, tight: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'third' }] }] },
+          { type: 'item', list_type: 'ordered', start: 3, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'third' }] }] },
         ],
       });
       expect(container.querySelector('ol')!.getAttribute('start')).toBe('3');
     });
 
-    // tightはlistが持つ。itemのtightは読まない（パーサーはitemのtightを常にfalseにする）
-    it('reads tight from the list, not from the item', () => {
+    // tightはlistが持つ。itemはtightを持たない
+    it('reads tight from the list', () => {
       const { container } = renderNode({
         type: 'list',
         list_type: 'bullet',
-        start: null,
+        start: 1,
         tight: true,
-        delimiter: '',
+        delimiter: 'period',
         children: [
-          { type: 'item', list_type: 'bullet', start: 0, tight: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'one' }] }] },
+          { type: 'item', list_type: 'bullet', start: 0, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'one' }] }] },
         ],
       });
       expect(container.querySelector('li p')).toBeNull();
@@ -166,15 +171,14 @@ describe('FmNode', () => {
       const { container } = renderNode({
         type: 'list',
         list_type: 'bullet',
-        start: null,
+        start: 1,
         tight: true,
-        delimiter: '',
+        delimiter: 'period',
         children: [
           {
             type: 'item',
             list_type: 'bullet',
             start: 0,
-            tight: false,
             children: [
               { type: 'paragraph', children: [{ type: 'text', value: 'one' }] },
               { type: 'block_quote', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'quoted' }] }] },
@@ -195,7 +199,6 @@ describe('FmNode', () => {
           type: 'item',
           list_type: 'bullet',
           start: 0,
-          tight: false,
           children: [{ type: 'paragraph', children: [{ type: 'text', value: 'tight item' }] }],
         },
         { ...defaultContext(), inTightList: true },
@@ -228,6 +231,21 @@ describe('FmNode', () => {
       });
       const checkbox = container.querySelector('input[type="checkbox"]') as HTMLInputElement;
       expect(checkbox.checked).toBe(true);
+    });
+
+    // タスクの段落の<p>も、リストがtightのときだけ外す
+    it('keeps <p> in a loose list', () => {
+      const { container } = renderNode({
+        type: 'list',
+        list_type: 'bullet',
+        start: 1,
+        tight: false,
+        delimiter: 'period',
+        children: [
+          { type: 'task_item', symbol: null, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'todo' }] }] },
+        ],
+      });
+      expect(container.querySelector('li > p')!.textContent).toBe('todo');
     });
   });
 
@@ -285,6 +303,13 @@ describe('FmNode', () => {
       expect(ths[1].getAttribute('align')).toBe('center');
       expect(ths[2].getAttribute('align')).toBeNull();
     });
+
+    // ヘッダーの行は<thead>に、ほかの行は<tbody>に入る
+    it('puts the header row in <thead> and the other rows in <tbody>', () => {
+      const { container } = renderNode(tableNode);
+      expect(container.querySelectorAll('table > thead > tr > th').length).toBe(3);
+      expect(container.querySelectorAll('table > tbody > tr > td').length).toBe(3);
+    });
   });
 
   describe('thematic_break', () => {
@@ -312,55 +337,52 @@ describe('FmNode', () => {
       expect(div).toBeTruthy();
       expect(div!.id).toBe('fn-note1');
     });
-  });
 
-  describe('description_list', () => {
-    it('renders dl/dt/dd', () => {
+    // 定義の先頭に、参照へ戻るリンクのラベルを置く。本文が同じ行に続くよう、最初の段落の中に入れる
+    it('puts a label that links back to the reference in the first paragraph', () => {
       const { container } = renderNode({
-        type: 'description_list',
-        children: [
-          {
-            type: 'description_item',
-            children: [
-              { type: 'description_term', children: [{ type: 'text', value: 'Term' }] },
-              { type: 'description_details', children: [{ type: 'text', value: 'Details' }] },
-            ],
-          },
-        ],
+        type: 'footnote_definition',
+        name: 'note1',
+        children: [{ type: 'paragraph', children: [{ type: 'text', value: 'footnote text' }] }],
       });
-      expect(container.querySelector('dl')).toBeTruthy();
-      expect(container.querySelector('dt')!.textContent).toContain('Term');
-      expect(container.querySelector('dd')!.textContent).toContain('Details');
+      const label = container.querySelector('div.footnote > p > a.footnote-label');
+      expect(label).toBeTruthy();
+      expect(label!.getAttribute('href')).toBe('#fnref-note1');
+      expect(label!.textContent).toBe('[note1]:');
+      expect(container.querySelector('div.footnote > p')!.textContent).toBe('[note1]: footnote text');
+    });
+
+    // 最初の子が段落でない定義では、ラベルをその前に置く
+    it('keeps the label in front of a definition that starts with another block', () => {
+      const { container } = renderNode({
+        type: 'footnote_definition',
+        name: 'note1',
+        children: [{ type: 'code_block', fenced: true, info: 'text', literal: 'x' }],
+      });
+      expect(container.querySelector('div.footnote > a.footnote-label')).toBeTruthy();
+      expect(container.querySelector('div.footnote > pre > code')!.textContent).toBe('x');
     });
   });
 
   describe('alert', () => {
-    it('renders div with alert class', () => {
+    // alertは、種類のクラスを持つ引用になる。先頭に既定のタイトルを置く
+    it('renders a block quote with the alert class and the default title', () => {
       const { container } = renderNode({
         type: 'alert',
         alert_type: 'warning',
         title: null,
         children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Careful!' }] }],
       });
-      const div = container.querySelector('div.alert.alert-warning');
-      expect(div).toBeTruthy();
+      const quote = container.querySelector('blockquote.alert.alert-warning');
+      expect(quote).toBeTruthy();
+      expect(quote!.querySelector('p.alert-title')!.textContent).toBe('Warning');
+      expect(quote!.textContent).toContain('Careful!');
     });
-  });
 
-  describe('front_matter', () => {
-    it('renders nothing', () => {
-      const { container } = renderNode({ type: 'front_matter', value: 'title: hello' });
-      expect(container.textContent!.trim()).toBe('');
-    });
-  });
-
-  describe('heex_block', () => {
-    it('renders children', () => {
-      const { container } = renderNode({
-        type: 'heex_block',
-        children: [{ type: 'text', value: 'heex' }],
-      });
-      expect(container.textContent).toContain('heex');
+    // タイトルが書かれていれば、それを使う
+    it('uses the custom title', () => {
+      const { container } = renderNode({ type: 'alert', alert_type: 'note', title: 'Heads up' });
+      expect(container.querySelector('p.alert-title')!.textContent).toBe('Heads up');
     });
   });
 
@@ -371,6 +393,24 @@ describe('FmNode', () => {
         children: [{ type: 'text', value: 'sub' }],
       });
       expect(container.textContent).toContain('sub');
+    });
+
+    // subtextは小さな文字の段落になる
+    it('wraps the children in <p><sub>', () => {
+      const { container } = renderNode({
+        type: 'subtext',
+        children: [{ type: 'text', value: 'sub' }],
+      });
+      expect(container.querySelector('p > sub')!.textContent).toBe('sub');
+    });
+  });
+
+  describe('unknown node', () => {
+    // 新しい版のパーサーが出す未知のノードは、子だけを描画する。中の文字を失わないため
+    it('renders the children of a node with an unknown type', () => {
+      const node = { type: 'future_node', children: [{ type: 'text', value: 'kept' }] } as unknown as AstNode;
+      const { container } = renderNode(node);
+      expect(container.textContent).toBe('kept');
     });
   });
 
@@ -516,10 +556,11 @@ describe('FmNode', () => {
     });
   });
 
-  describe('image', () => {
-    it('renders <img> with src and alt', () => {
+  describe('embed', () => {
+    // embedは<img>になる。srcはurl、altは子のテキスト、titleはtitle
+    it('renders <img> with src, alt, and title', () => {
       const { container } = renderNode({
-        type: 'image',
+        type: 'embed',
         url: 'pic.png',
         title: 'Photo',
         children: [{ type: 'text', value: 'alt text' }],
@@ -589,18 +630,67 @@ describe('FmNode', () => {
     });
   });
 
+  describe('hashtag', () => {
+    // hashtagは、タグ名をhrefに持つリンクになる。表示は#付きのタグ名
+    it('renders a link to the tag with the hashtag class', () => {
+      const { container } = renderNode({ type: 'hashtag', value: 'diary' });
+      const a = container.querySelector('a.hashtag');
+      expect(a).toBeTruthy();
+      expect(a!.getAttribute('href')).toBe('diary');
+      expect(a!.textContent).toBe('#diary');
+    });
+
+    // タグはページへのリンクなので、wikilinkのhrefPrefixを使う
+    it('uses hrefPrefix of the wikilink options', () => {
+      const ctx = defaultContext({ wikilink: { hrefPrefix: '/wiki/' } });
+      const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
+      expect(container.querySelector('a.hashtag')!.getAttribute('href')).toBe('/wiki/diary');
+    });
+
+    // SPAの遷移のため、wikilinkのlinkComponentを使う
+    it('uses linkComponent of the wikilink options', () => {
+      function CustomLink({ to, children, ...rest }: { to: string; children?: React.ReactNode; [k: string]: unknown }) {
+        return <a href={to} data-custom="true" {...rest}>{children}</a>;
+      }
+      const ctx = defaultContext({ wikilink: { linkComponent: CustomLink, hrefPrefix: '/p/' } });
+      const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
+      const a = container.querySelector('a[data-custom]');
+      expect(a).toBeTruthy();
+      expect(a!.getAttribute('href')).toBe('/p/diary');
+      expect(a!.classList.contains('hashtag')).toBe(true);
+      expect(a!.textContent).toBe('#diary');
+    });
+  });
+
   describe('footnote_reference', () => {
     it('renders superscript link', () => {
-      const { container } = renderNode({ type: 'footnote_reference', name: 'fn1', ref_num: 1, ix: 0 });
+      const { container } = renderNode({ type: 'footnote_reference', name: 'fn1', ref_num: 1, ix: 1 });
       const a = container.querySelector('sup > a');
       expect(a).toBeTruthy();
       expect(a!.getAttribute('href')).toBe('#fn-fn1');
-      expect(a!.textContent).toContain('[1]');
+      expect(a!.textContent).toBe('[fn1]');
     });
 
-    it('uses ix+1 for display number', () => {
-      const { container } = renderNode({ type: 'footnote_reference', name: 'fn2', ref_num: 2, ix: 4 });
-      expect(container.querySelector('sup > a')!.textContent).toContain('[5]');
+    // 表示するのは脚注の名前。ixは本文ごとに1から数え直すので、表示に使わない
+    it('shows the name, not ix', () => {
+      const { container } = renderNode({ type: 'footnote_reference', name: 'note', ref_num: 1, ix: 4 });
+      expect(container.querySelector('sup > a')!.textContent).toBe('[note]');
+    });
+
+    // インライン脚注の名前（__inline_1）はパーサーが作ったものなので、番号だけを表示する
+    it('shows the number of an inline footnote', () => {
+      const { container } = renderNode({ type: 'footnote_reference', name: '__inline_1', ref_num: 1, ix: 1 });
+      const a = container.querySelector('sup > a');
+      expect(a!.textContent).toBe('[1]');
+      expect(a!.getAttribute('href')).toBe('#fn-__inline_1');
+    });
+
+    // idは一意でなければならない。同じ脚注への2つ目の参照は、番号付きのidを持つ
+    it('gives the first reference the plain id and the second its number', () => {
+      const first = renderNode({ type: 'footnote_reference', name: 'note', ref_num: 1, ix: 1 });
+      expect(first.container.querySelector('sup.footnote-ref')!.id).toBe('fnref-note');
+      const second = renderNode({ type: 'footnote_reference', name: 'note', ref_num: 2, ix: 1 });
+      expect(second.container.querySelector('sup.footnote-ref')!.id).toBe('fnref-note-2');
     });
   });
 
@@ -612,19 +702,12 @@ describe('FmNode', () => {
   });
 
   describe('math', () => {
-    it('renders display math in <pre><code>', () => {
-      const { container } = renderNode({ type: 'math', dollar_math: true, display_math: true, literal: 'E=mc^2' });
-      const code = container.querySelector('pre > code.math.math-display');
-      expect(code).toBeTruthy();
-      expect(code!.textContent).toBe('E=mc^2');
-    });
-
-    it('renders inline math in <code>', () => {
-      const { container } = renderNode({ type: 'math', dollar_math: true, display_math: false, literal: 'x^2' });
-      const code = container.querySelector('code.math.math-inline');
-      expect(code).toBeTruthy();
-      expect(code!.textContent).toBe('x^2');
-      expect(container.querySelector('pre')).toBeNull();
+    // 数式は常にインライン。mathクラスの<span>になる
+    it('renders math in <span class="math">', () => {
+      const { container } = renderNode({ type: 'math', literal: 'x^2' });
+      const span = container.querySelector('span.math');
+      expect(span).toBeTruthy();
+      expect(span!.textContent).toBe('x^2');
     });
   });
 
@@ -635,32 +718,4 @@ describe('FmNode', () => {
     });
   });
 
-  describe('heex_inline', () => {
-    it('passes through via innerHTML', () => {
-      const { container } = renderNode({ type: 'heex_inline', value: '<i>italic</i>' });
-      expect(container.querySelector('i')).toBeTruthy();
-    });
-  });
-
-  describe('raw', () => {
-    it('passes through via innerHTML', () => {
-      const { container } = renderNode({ type: 'raw', value: '<span>raw</span>' });
-      expect(container.querySelector('span')!.textContent).toBe('raw');
-    });
-  });
-
-  describe('escaped', () => {
-    it('renders nothing', () => {
-      const { container } = renderNode({ type: 'escaped' });
-      expect(container.textContent!.trim()).toBe('');
-    });
-  });
-
-  describe('escaped_tag', () => {
-    it('renders escaped value as text', () => {
-      const { container } = renderNode({ type: 'escaped_tag', value: '<div>' });
-      expect(container.textContent).toContain('<div>');
-      expect(container.querySelector('div')).toBeNull();
-    });
-  });
 });

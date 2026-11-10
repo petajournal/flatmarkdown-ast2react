@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import type { TableAlignment } from 'flatmarkdown-ast';
 
 export interface WikiLinkReactOptions {
   /** Custom link component (e.g. react-router's Link). Receives `to` and `children`. */
@@ -16,7 +17,7 @@ export interface ReactRenderOptions {
 export interface RenderContext {
   options: ReactRenderOptions;
   inHeaderRow: boolean;
-  tableAlignments: string[];
+  tableAlignments: TableAlignment[];
   cellIndex: number;
   /** true inside a tight list; an item then drops <p> around its own paragraphs */
   inTightList: boolean;
