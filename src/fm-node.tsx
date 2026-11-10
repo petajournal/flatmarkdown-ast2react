@@ -280,14 +280,7 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       return <>{n.emoji as string}</>;
 
     case 'math':
-      if (n.display_math) {
-        return (
-          <pre>
-            <code className="math math-display">{n.literal as string}</code>
-          </pre>
-        );
-      }
-      return <code className="math math-inline">{n.literal as string}</code>;
+      return <span className="math">{n.literal as string}</span>;
 
     case 'html_inline':
       return <span dangerouslySetInnerHTML={{ __html: n.value as string }} />;

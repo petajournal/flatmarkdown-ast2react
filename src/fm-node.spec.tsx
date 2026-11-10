@@ -656,13 +656,6 @@ describe('FmNode', () => {
   });
 
   describe('math', () => {
-    it('renders display math in <pre><code>', () => {
-      const { container } = renderNode({ type: 'math', dollar_math: true, display_math: true, literal: 'E=mc^2' });
-      const code = container.querySelector('pre > code.math.math-display');
-      expect(code).toBeTruthy();
-      expect(code!.textContent).toBe('E=mc^2');
-    });
-
     // 数式は常にインライン。mathクラスの<span>になる
     it('renders math in <span class="math">', () => {
       const { container } = renderNode({ type: 'math', literal: 'x^2' });
