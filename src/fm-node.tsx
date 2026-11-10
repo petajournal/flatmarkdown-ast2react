@@ -207,7 +207,7 @@ function FmNodeInner({ node, context }: FmNodeProps) {
         </a>
       );
 
-    case 'image': {
+    case 'embed': {
       const alt = extractText(node);
       return (
         <img
