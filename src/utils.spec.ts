@@ -33,6 +33,12 @@ describe('extractText', () => {
     expect(extractText(node)).toBe('run npm test');
   });
 
+  // ハッシュタグは、#付きのタグ名になる
+  it('writes a hashtag with its hash sign', () => {
+    const node: AstNode = { type: 'emph', children: [{ type: 'hashtag', value: 'diary' }] };
+    expect(extractText(node)).toBe('#diary');
+  });
+
   it('returns empty string for node with no children', () => {
     expect(extractText({ type: 'emph' })).toBe('');
   });
