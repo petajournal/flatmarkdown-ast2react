@@ -323,6 +323,17 @@ describe('FmNode', () => {
       expect(label!.textContent).toBe('[note1]:');
       expect(container.querySelector('div.footnote > p')!.textContent).toBe('[note1]: footnote text');
     });
+
+    // 最初の子が段落でない定義では、ラベルをその前に置く
+    it('keeps the label in front of a definition that starts with another block', () => {
+      const { container } = renderNode({
+        type: 'footnote_definition',
+        name: 'note1',
+        children: [{ type: 'code_block', fenced: true, info: 'text', literal: 'x' }],
+      });
+      expect(container.querySelector('div.footnote > a.footnote-label')).toBeTruthy();
+      expect(container.querySelector('div.footnote > pre > code')!.textContent).toBe('x');
+    });
   });
 
   describe('alert', () => {
