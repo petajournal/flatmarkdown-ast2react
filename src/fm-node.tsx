@@ -221,12 +221,14 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       );
     }
 
-    case 'hashtag':
+    case 'hashtag': {
+      const prefix = context.options.wikilink?.hrefPrefix ?? '';
       return (
-        <a href={n.value as string} className="hashtag">
+        <a href={prefix + (n.value as string)} className="hashtag">
           {`#${n.value as string}`}
         </a>
       );
+    }
 
     case 'footnote_reference':
       return (
