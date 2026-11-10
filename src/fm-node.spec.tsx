@@ -288,6 +288,13 @@ describe('FmNode', () => {
       expect(ths[1].getAttribute('align')).toBe('center');
       expect(ths[2].getAttribute('align')).toBeNull();
     });
+
+    // ヘッダーの行は<thead>に、ほかの行は<tbody>に入る
+    it('puts the header row in <thead> and the other rows in <tbody>', () => {
+      const { container } = renderNode(tableNode);
+      expect(container.querySelectorAll('table > thead > tr > th').length).toBe(3);
+      expect(container.querySelectorAll('table > tbody > tr > td').length).toBe(3);
+    });
   });
 
   describe('thematic_break', () => {
