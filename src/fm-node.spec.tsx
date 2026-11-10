@@ -593,6 +593,21 @@ describe('FmNode', () => {
       expect(img.getAttribute('width')).toBe('300');
       expect(img.getAttribute('height')).toBe('240');
     });
+
+    // 正の整数でないwやhは使わない。値のないフラグ（#w）や文字（#w=wide）である
+    it('ignores w and h that are not a positive whole number', () => {
+      const { container } = renderNode({
+        type: 'embed',
+        url: 'pic.png',
+        title: '',
+        props: { w: 'wide', h: true },
+      });
+      const img = container.querySelector('img')!;
+      expect(img.getAttribute('width')).toBeNull();
+      expect(img.getAttribute('height')).toBeNull();
+      const zero = renderNode({ type: 'embed', url: 'pic.png', title: '', props: { w: '0' } });
+      expect(zero.container.querySelector('img')!.getAttribute('width')).toBeNull();
+    });
   });
 
   describe('wikilink', () => {
