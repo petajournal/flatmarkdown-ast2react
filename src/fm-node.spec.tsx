@@ -550,6 +550,17 @@ describe('FmNode', () => {
     });
   });
 
+  describe('hashtag', () => {
+    // hashtagは、タグ名をhrefに持つリンクになる。表示は#付きのタグ名
+    it('renders a link to the tag with the hashtag class', () => {
+      const { container } = renderNode({ type: 'hashtag', value: 'diary' });
+      const a = container.querySelector('a.hashtag');
+      expect(a).toBeTruthy();
+      expect(a!.getAttribute('href')).toBe('diary');
+      expect(a!.textContent).toBe('#diary');
+    });
+  });
+
   describe('footnote_reference', () => {
     it('renders superscript link', () => {
       const { container } = renderNode({ type: 'footnote_reference', name: 'fn1', ref_num: 1, ix: 0 });
