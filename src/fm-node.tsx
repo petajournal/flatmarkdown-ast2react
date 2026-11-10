@@ -60,22 +60,19 @@ function FmNodeInner({ node, context }: FmNodeProps) {
     case 'list': {
       const isOrdered = n.list_type === 'ordered';
       const start = n.start as number | null;
+      const listContext = childContext({ tightList: n.tight as boolean });
       if (isOrdered) {
         return (
           <ol start={start != null && start !== 1 ? start : undefined}>
-            {renderChildren(children, context)}
+            {renderChildren(children, listContext)}
           </ol>
         );
       }
-      return <ul>{renderChildren(children, context)}</ul>;
+      return <ul>{renderChildren(children, listContext)}</ul>;
     }
 
     case 'item':
-      return (
-        <li>
-          {renderChildren(children, childContext({ tightList: n.tight as boolean }))}
-        </li>
-      );
+      return <li>{renderChildren(children, context)}</li>;
 
     case 'task_item':
       return (

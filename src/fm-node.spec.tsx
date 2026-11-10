@@ -163,14 +163,18 @@ describe('FmNode', () => {
   });
 
   describe('item', () => {
-    it('renders <li> and passes tight context', () => {
-      const { container } = renderNode({
-        type: 'item',
-        list_type: 'bullet',
-        start: 0,
-        tight: true,
-        children: [{ type: 'paragraph', children: [{ type: 'text', value: 'tight item' }] }],
-      });
+    // tightなリストの中では、itemの段落の<p>を外す
+    it('renders <li> and drops <p> in a tight list', () => {
+      const { container } = renderNode(
+        {
+          type: 'item',
+          list_type: 'bullet',
+          start: 0,
+          tight: false,
+          children: [{ type: 'paragraph', children: [{ type: 'text', value: 'tight item' }] }],
+        },
+        { ...defaultContext(), tightList: true },
+      );
       const li = container.querySelector('li');
       expect(li).toBeTruthy();
       expect(li!.querySelector('p')).toBeNull();
