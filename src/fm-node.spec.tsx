@@ -160,6 +160,31 @@ describe('FmNode', () => {
       expect(container.querySelector('li p')).toBeNull();
       expect(container.querySelector('li')!.textContent).toContain('one');
     });
+
+    // tightが外すのは、itemの直下の段落の<p>だけ。引用の中の段落は<p>を保つ
+    it('keeps <p> for a paragraph inside a block quote in a tight item', () => {
+      const { container } = renderNode({
+        type: 'list',
+        list_type: 'bullet',
+        start: null,
+        tight: true,
+        delimiter: '',
+        children: [
+          {
+            type: 'item',
+            list_type: 'bullet',
+            start: 0,
+            tight: false,
+            children: [
+              { type: 'paragraph', children: [{ type: 'text', value: 'one' }] },
+              { type: 'block_quote', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'quoted' }] }] },
+            ],
+          },
+        ],
+      });
+      expect(container.querySelector('li > p')).toBeNull();
+      expect(container.querySelector('blockquote > p')!.textContent).toContain('quoted');
+    });
   });
 
   describe('item', () => {
