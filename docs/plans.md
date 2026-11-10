@@ -22,4 +22,4 @@
 - [x] `embed`のaltに、コード、ハッシュタグ、改行、生のHTMLを含める
 - [x] ノードの属性を、型を通して読む（`as`のキャストをなくす）
 - [x] READMEを直す
-- [ ] `flatmarkdown-ast` 0.5.0がnpmに公開されたら、`package-lock.json`を更新する
+- [x] `flatmarkdown-ast` 0.5.0がnpmに公開されたら、`package-lock.json`を更新する
