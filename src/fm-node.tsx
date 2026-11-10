@@ -221,6 +221,13 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       );
     }
 
+    case 'hashtag':
+      return (
+        <a href={n.value as string} className="hashtag">
+          {`#${n.value as string}`}
+        </a>
+      );
+
     case 'footnote_reference':
       return (
         <sup>
