@@ -1,7 +1,7 @@
 import { memo, createElement, useMemo } from 'react';
 import type { AstNode } from 'flatmarkdown-ast';
 import type { RenderContext } from './types';
-import { extractText } from './utils';
+import { extractText, footnoteLabel } from './utils';
 
 interface FmNodeProps {
   node: AstNode;
@@ -243,7 +243,7 @@ function FmNodeInner({ node, context }: FmNodeProps) {
     case 'footnote_reference':
       return (
         <sup>
-          <a href={`#fn-${n.name}`}>{`[${n.name as string}]`}</a>
+          <a href={`#fn-${n.name}`}>{`[${footnoteLabel(n.name as string)}]`}</a>
         </sup>
       );
 
