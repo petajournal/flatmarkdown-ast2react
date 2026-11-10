@@ -1,12 +1,16 @@
 import type { AstNode } from 'flatmarkdown-ast';
 
+/**
+ * The text of a node and its descendants, without any markup: what the `alt` of an image holds.
+ * Raw inline HTML counts as text, as in the CommonMark reference renderer.
+ */
 export function extractText(node: AstNode): string {
   if (node.type === 'text' || node.type === 'html_inline') return node.value;
   if (node.type === 'code') return node.literal;
   if (node.type === 'hashtag') return `#${node.value}`;
   if (node.type === 'softbreak' || node.type === 'linebreak') return ' ';
   if ('children' in node && node.children) {
-    return (node.children as AstNode[]).map(extractText).join('');
+    return node.children.map(extractText).join('');
   }
   return '';
 }
