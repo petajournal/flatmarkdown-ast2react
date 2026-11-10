@@ -591,9 +591,10 @@ describe('FmNode', () => {
       expect(a!.textContent).toContain('[1]');
     });
 
-    it('uses ix+1 for display number', () => {
-      const { container } = renderNode({ type: 'footnote_reference', name: 'fn2', ref_num: 2, ix: 4 });
-      expect(container.querySelector('sup > a')!.textContent).toContain('[5]');
+    // 表示するのは脚注の名前。ixは本文ごとに1から数え直すので、表示に使わない
+    it('shows the name, not ix', () => {
+      const { container } = renderNode({ type: 'footnote_reference', name: 'note', ref_num: 1, ix: 4 });
+      expect(container.querySelector('sup > a')!.textContent).toBe('[note]');
     });
   });
 
