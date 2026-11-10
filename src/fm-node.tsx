@@ -136,18 +136,6 @@ function FmNodeInner({ node, context }: FmNodeProps) {
         </div>
       );
 
-    case 'description_list':
-      return <dl>{renderChildren(children, context)}</dl>;
-
-    case 'description_item':
-      return <>{renderChildren(children, context)}</>;
-
-    case 'description_term':
-      return <dt>{renderChildren(children, context)}</dt>;
-
-    case 'description_details':
-      return <dd>{renderChildren(children, context)}</dd>;
-
     case 'alert':
       return (
         <div className={`alert alert-${n.alert_type}`}>
@@ -155,10 +143,6 @@ function FmNodeInner({ node, context }: FmNodeProps) {
         </div>
       );
 
-    case 'front_matter':
-      return null;
-
-    case 'heex_block':
     case 'subtext':
       return <>{renderChildren(children, context)}</>;
 
@@ -258,15 +242,7 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       return <code className="math math-inline">{n.literal as string}</code>;
 
     case 'html_inline':
-    case 'heex_inline':
-    case 'raw':
       return <span dangerouslySetInnerHTML={{ __html: n.value as string }} />;
-
-    case 'escaped':
-      return null;
-
-    case 'escaped_tag':
-      return <>{n.value as string}</>;
 
     default:
       return null;

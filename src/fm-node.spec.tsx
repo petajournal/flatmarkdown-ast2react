@@ -49,7 +49,6 @@ describe('FmNode', () => {
         const { container } = renderNode({
           type: 'heading',
           level,
-          setext: false,
           children: [{ type: 'text', value: `Heading ${level}` }],
         });
         const h = container.querySelector(`h${level}`);
@@ -106,11 +105,11 @@ describe('FmNode', () => {
       const { container } = renderNode({
         type: 'list',
         list_type: 'bullet',
-        start: null,
+        start: 1,
         tight: false,
-        delimiter: '',
+        delimiter: 'period',
         children: [
-          { type: 'item', list_type: 'bullet', start: 0, tight: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'item1' }] }] },
+          { type: 'item', list_type: 'bullet', start: 0, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'item1' }] }] },
         ],
       });
       expect(container.querySelector('ul')).toBeTruthy();
@@ -123,9 +122,9 @@ describe('FmNode', () => {
         list_type: 'ordered',
         start: 1,
         tight: false,
-        delimiter: '.',
+        delimiter: 'period',
         children: [
-          { type: 'item', list_type: 'ordered', start: 1, tight: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'first' }] }] },
+          { type: 'item', list_type: 'ordered', start: 1, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'first' }] }] },
         ],
       });
       expect(container.querySelector('ol')).toBeTruthy();
@@ -137,24 +136,24 @@ describe('FmNode', () => {
         list_type: 'ordered',
         start: 3,
         tight: false,
-        delimiter: '.',
+        delimiter: 'period',
         children: [
-          { type: 'item', list_type: 'ordered', start: 3, tight: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'third' }] }] },
+          { type: 'item', list_type: 'ordered', start: 3, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'third' }] }] },
         ],
       });
       expect(container.querySelector('ol')!.getAttribute('start')).toBe('3');
     });
 
-    // tightはlistが持つ。itemのtightは読まない（パーサーはitemのtightを常にfalseにする）
-    it('reads tight from the list, not from the item', () => {
+    // tightはlistが持つ。itemはtightを持たない
+    it('reads tight from the list', () => {
       const { container } = renderNode({
         type: 'list',
         list_type: 'bullet',
-        start: null,
+        start: 1,
         tight: true,
-        delimiter: '',
+        delimiter: 'period',
         children: [
-          { type: 'item', list_type: 'bullet', start: 0, tight: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'one' }] }] },
+          { type: 'item', list_type: 'bullet', start: 0, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'one' }] }] },
         ],
       });
       expect(container.querySelector('li p')).toBeNull();
@@ -166,15 +165,14 @@ describe('FmNode', () => {
       const { container } = renderNode({
         type: 'list',
         list_type: 'bullet',
-        start: null,
+        start: 1,
         tight: true,
-        delimiter: '',
+        delimiter: 'period',
         children: [
           {
             type: 'item',
             list_type: 'bullet',
             start: 0,
-            tight: false,
             children: [
               { type: 'paragraph', children: [{ type: 'text', value: 'one' }] },
               { type: 'block_quote', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'quoted' }] }] },
@@ -195,7 +193,6 @@ describe('FmNode', () => {
           type: 'item',
           list_type: 'bullet',
           start: 0,
-          tight: false,
           children: [{ type: 'paragraph', children: [{ type: 'text', value: 'tight item' }] }],
         },
         { ...defaultContext(), inTightList: true },
@@ -314,26 +311,6 @@ describe('FmNode', () => {
     });
   });
 
-  describe('description_list', () => {
-    it('renders dl/dt/dd', () => {
-      const { container } = renderNode({
-        type: 'description_list',
-        children: [
-          {
-            type: 'description_item',
-            children: [
-              { type: 'description_term', children: [{ type: 'text', value: 'Term' }] },
-              { type: 'description_details', children: [{ type: 'text', value: 'Details' }] },
-            ],
-          },
-        ],
-      });
-      expect(container.querySelector('dl')).toBeTruthy();
-      expect(container.querySelector('dt')!.textContent).toContain('Term');
-      expect(container.querySelector('dd')!.textContent).toContain('Details');
-    });
-  });
-
   describe('alert', () => {
     it('renders div with alert class', () => {
       const { container } = renderNode({
@@ -344,23 +321,6 @@ describe('FmNode', () => {
       });
       const div = container.querySelector('div.alert.alert-warning');
       expect(div).toBeTruthy();
-    });
-  });
-
-  describe('front_matter', () => {
-    it('renders nothing', () => {
-      const { container } = renderNode({ type: 'front_matter', value: 'title: hello' });
-      expect(container.textContent!.trim()).toBe('');
-    });
-  });
-
-  describe('heex_block', () => {
-    it('renders children', () => {
-      const { container } = renderNode({
-        type: 'heex_block',
-        children: [{ type: 'text', value: 'heex' }],
-      });
-      expect(container.textContent).toContain('heex');
     });
   });
 
@@ -636,32 +596,4 @@ describe('FmNode', () => {
     });
   });
 
-  describe('heex_inline', () => {
-    it('passes through via innerHTML', () => {
-      const { container } = renderNode({ type: 'heex_inline', value: '<i>italic</i>' });
-      expect(container.querySelector('i')).toBeTruthy();
-    });
-  });
-
-  describe('raw', () => {
-    it('passes through via innerHTML', () => {
-      const { container } = renderNode({ type: 'raw', value: '<span>raw</span>' });
-      expect(container.querySelector('span')!.textContent).toBe('raw');
-    });
-  });
-
-  describe('escaped', () => {
-    it('renders nothing', () => {
-      const { container } = renderNode({ type: 'escaped' });
-      expect(container.textContent!.trim()).toBe('');
-    });
-  });
-
-  describe('escaped_tag', () => {
-    it('renders escaped value as text', () => {
-      const { container } = renderNode({ type: 'escaped_tag', value: '<div>' });
-      expect(container.textContent).toContain('<div>');
-      expect(container.querySelector('div')).toBeNull();
-    });
-  });
 });

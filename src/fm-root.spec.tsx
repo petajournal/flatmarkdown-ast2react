@@ -19,7 +19,7 @@ describe('FmRoot', () => {
     const ast: AstNode = {
       type: 'document',
       children: [
-        { type: 'heading', level: 1, setext: false, children: [{ type: 'text', value: 'Title' }] },
+        { type: 'heading', level: 1, children: [{ type: 'text', value: 'Title' }] },
       ],
     };
     const { container } = render(<FmRoot ast={JSON.stringify(ast)} />);
