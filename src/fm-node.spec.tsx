@@ -580,6 +580,19 @@ describe('FmNode', () => {
         'http://journal.test:9000/assets/pic.png',
       );
     });
+
+    // propsのwとhは、画像の幅と高さになる（`![alt](img.png#w=300&h=240)`）
+    it('uses w and h of the props as the width and the height', () => {
+      const { container } = renderNode({
+        type: 'embed',
+        url: 'pic.png',
+        title: '',
+        props: { w: '300', h: '240' },
+      });
+      const img = container.querySelector('img')!;
+      expect(img.getAttribute('width')).toBe('300');
+      expect(img.getAttribute('height')).toBe('240');
+    });
   });
 
   describe('wikilink', () => {
