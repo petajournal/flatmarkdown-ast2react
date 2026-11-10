@@ -1,7 +1,7 @@
 import type { AstNode } from 'flatmarkdown-ast';
 
 export function extractText(node: AstNode): string {
-  if (node.type === 'text') return (node as { value: string }).value;
+  if (node.type === 'text' || node.type === 'html_inline') return node.value;
   if (node.type === 'code') return node.literal;
   if (node.type === 'hashtag') return `#${node.value}`;
   if (node.type === 'softbreak' || node.type === 'linebreak') return ' ';
