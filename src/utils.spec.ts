@@ -18,8 +18,10 @@ describe('extractText', () => {
     expect(extractText(node)).toBe('foobar');
   });
 
-  it('returns empty string for nodes without text', () => {
-    expect(extractText({ type: 'linebreak' })).toBe('');
+  // 改行は空白になる。前後の単語がつながらないようにするため
+  it('turns a line break into a space', () => {
+    expect(extractText({ type: 'softbreak' })).toBe(' ');
+    expect(extractText({ type: 'linebreak' })).toBe(' ');
   });
 
   // インラインコードの中身も文字として数える
