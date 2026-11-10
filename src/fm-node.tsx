@@ -223,9 +223,19 @@ function FmNodeInner({ node, context }: FmNodeProps) {
 
     case 'hashtag': {
       const prefix = context.options.wikilink?.hrefPrefix ?? '';
+      const href = prefix + (n.value as string);
+      const label = `#${n.value as string}`;
+      const LinkComp = context.options.wikilink?.linkComponent;
+      if (LinkComp) {
+        return (
+          <LinkComp to={href} className="hashtag">
+            {label}
+          </LinkComp>
+        );
+      }
       return (
-        <a href={prefix + (n.value as string)} className="hashtag">
-          {`#${n.value as string}`}
+        <a href={href} className="hashtag">
+          {label}
         </a>
       );
     }
