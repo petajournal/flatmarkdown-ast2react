@@ -35,6 +35,14 @@ function renderItemChildren(children: AstNode[], context: RenderContext) {
   ));
 }
 
+// The size of an embed in pixels, from a property such as `w` in `#w=300`. A property that
+// is not a positive whole number gives no size.
+function dimension(value: string | true | undefined): number | undefined {
+  if (typeof value !== 'string' || !/^\d+$/.test(value.trim())) return undefined;
+  const pixels = Number(value);
+  return pixels > 0 ? pixels : undefined;
+}
+
 function isHeaderRow(row: AstNode) {
   return row.type === 'table_row' && row.header;
 }
@@ -258,8 +266,8 @@ function FmNodeInner({ node, context }: FmNodeProps) {
           src={src}
           alt={extractText(node)}
           title={node.title || undefined}
-          width={node.props?.w as string | undefined}
-          height={node.props?.h as string | undefined}
+          width={dimension(node.props?.w)}
+          height={dimension(node.props?.h)}
         />
       );
     }
