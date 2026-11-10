@@ -250,9 +250,11 @@ function FmNodeInner({ node, context }: FmNodeProps) {
         </a>
       );
 
-    // `props` are not used. How an app shows a video or a PDF differs from app to app.
-    case 'embed':
-      return <img src={node.url} alt={extractText(node)} title={node.title || undefined} />;
+    case 'embed': {
+      const baseUrl = context.options.embed?.baseUrl;
+      const src = baseUrl ? new URL(node.url, baseUrl).href : node.url;
+      return <img src={src} alt={extractText(node)} title={node.title || undefined} />;
+    }
 
     case 'wikilink':
       return (
