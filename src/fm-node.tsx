@@ -3,6 +3,14 @@ import type { AstNode } from 'flatmarkdown-ast';
 import type { RenderContext } from './types';
 import { extractText, footnoteLabel } from './utils';
 
+const ALERT_TITLES: Record<string, string> = {
+  note: 'Note',
+  tip: 'Tip',
+  important: 'Important',
+  warning: 'Warning',
+  caution: 'Caution',
+};
+
 interface FmNodeProps {
   node: AstNode;
   context: RenderContext;
@@ -158,9 +166,10 @@ function FmNodeInner({ node, context }: FmNodeProps) {
 
     case 'alert':
       return (
-        <div className={`alert alert-${n.alert_type}`}>
+        <blockquote className={`alert alert-${n.alert_type}`}>
+          <p className="alert-title">{ALERT_TITLES[n.alert_type as string]}</p>
           {renderChildren(children, context)}
-        </div>
+        </blockquote>
       );
 
     case 'subtext':
