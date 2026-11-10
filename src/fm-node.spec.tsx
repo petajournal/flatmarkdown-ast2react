@@ -596,6 +596,14 @@ describe('FmNode', () => {
       const { container } = renderNode({ type: 'footnote_reference', name: 'note', ref_num: 1, ix: 4 });
       expect(container.querySelector('sup > a')!.textContent).toBe('[note]');
     });
+
+    // インライン脚注の名前（__inline_1）はパーサーが作ったものなので、番号だけを表示する
+    it('shows the number of an inline footnote', () => {
+      const { container } = renderNode({ type: 'footnote_reference', name: '__inline_1', ref_num: 1, ix: 1 });
+      const a = container.querySelector('sup > a');
+      expect(a!.textContent).toBe('[1]');
+      expect(a!.getAttribute('href')).toBe('#fn-__inline_1');
+    });
   });
 
   describe('shortcode', () => {
