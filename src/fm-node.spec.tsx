@@ -309,6 +309,20 @@ describe('FmNode', () => {
       expect(div).toBeTruthy();
       expect(div!.id).toBe('fn-note1');
     });
+
+    // 定義の先頭に、参照へ戻るリンクのラベルを置く。本文が同じ行に続くよう、最初の段落の中に入れる
+    it('puts a label that links back to the reference in the first paragraph', () => {
+      const { container } = renderNode({
+        type: 'footnote_definition',
+        name: 'note1',
+        children: [{ type: 'paragraph', children: [{ type: 'text', value: 'footnote text' }] }],
+      });
+      const label = container.querySelector('div.footnote > p > a.footnote-label');
+      expect(label).toBeTruthy();
+      expect(label!.getAttribute('href')).toBe('#fnref-note1');
+      expect(label!.textContent).toBe('[note1]:');
+      expect(container.querySelector('div.footnote > p')!.textContent).toBe('[note1]: footnote text');
+    });
   });
 
   describe('alert', () => {
