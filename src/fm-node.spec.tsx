@@ -559,6 +559,13 @@ describe('FmNode', () => {
       expect(a!.getAttribute('href')).toBe('diary');
       expect(a!.textContent).toBe('#diary');
     });
+
+    // タグはページへのリンクなので、wikilinkのhrefPrefixを使う
+    it('uses hrefPrefix of the wikilink options', () => {
+      const ctx = defaultContext({ wikilink: { hrefPrefix: '/wiki/' } });
+      const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
+      expect(container.querySelector('a.hashtag')!.getAttribute('href')).toBe('/wiki/diary');
+    });
   });
 
   describe('footnote_reference', () => {
