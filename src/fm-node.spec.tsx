@@ -144,17 +144,62 @@ describe('FmNode', () => {
       });
       expect(container.querySelector('ol')!.getAttribute('start')).toBe('3');
     });
+
+    // tightはlistが持つ。itemのtightは読まない（パーサーはitemのtightを常にfalseにする）
+    it('reads tight from the list, not from the item', () => {
+      const { container } = renderNode({
+        type: 'list',
+        list_type: 'bullet',
+        start: null,
+        tight: true,
+        delimiter: '',
+        children: [
+          { type: 'item', list_type: 'bullet', start: 0, tight: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'one' }] }] },
+        ],
+      });
+      expect(container.querySelector('li p')).toBeNull();
+      expect(container.querySelector('li')!.textContent).toContain('one');
+    });
+
+    // tightが外すのは、itemの直下の段落の<p>だけ。引用の中の段落は<p>を保つ
+    it('keeps <p> for a paragraph inside a block quote in a tight item', () => {
+      const { container } = renderNode({
+        type: 'list',
+        list_type: 'bullet',
+        start: null,
+        tight: true,
+        delimiter: '',
+        children: [
+          {
+            type: 'item',
+            list_type: 'bullet',
+            start: 0,
+            tight: false,
+            children: [
+              { type: 'paragraph', children: [{ type: 'text', value: 'one' }] },
+              { type: 'block_quote', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'quoted' }] }] },
+            ],
+          },
+        ],
+      });
+      expect(container.querySelector('li > p')).toBeNull();
+      expect(container.querySelector('blockquote > p')!.textContent).toContain('quoted');
+    });
   });
 
   describe('item', () => {
-    it('renders <li> and passes tight context', () => {
-      const { container } = renderNode({
-        type: 'item',
-        list_type: 'bullet',
-        start: 0,
-        tight: true,
-        children: [{ type: 'paragraph', children: [{ type: 'text', value: 'tight item' }] }],
-      });
+    // tightなリストの中では、itemの段落の<p>を外す
+    it('renders <li> and drops <p> in a tight list', () => {
+      const { container } = renderNode(
+        {
+          type: 'item',
+          list_type: 'bullet',
+          start: 0,
+          tight: false,
+          children: [{ type: 'paragraph', children: [{ type: 'text', value: 'tight item' }] }],
+        },
+        { ...defaultContext(), inTightList: true },
+      );
       const li = container.querySelector('li');
       expect(li).toBeTruthy();
       expect(li!.querySelector('p')).toBeNull();
