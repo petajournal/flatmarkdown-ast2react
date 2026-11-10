@@ -65,7 +65,7 @@ function FmNodeInner({ node, context }: FmNodeProps) {
 
     case 'code_block': {
       const info = n.info as string | undefined;
-      const className = info ? `language-${info}` : undefined;
+      const className = info && info !== 'text' ? `language-${info}` : undefined;
       return (
         <pre>
           <code className={className}>{n.literal as string}</code>
