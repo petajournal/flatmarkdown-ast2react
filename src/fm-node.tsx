@@ -54,7 +54,7 @@ interface PageLinkProps {
 function PageLink({ url, className, wikilink = false, context, children }: PageLinkProps) {
   const options = context.options.wikilink;
   const href = (options?.hrefPrefix ?? '') + url;
-  const marker = wikilink ? { 'data-wikilink': 'true' } : {};
+  const marker = wikilink ? { 'data-wikilink': 'true' } : { 'data-hashtag': 'true' };
   const LinkComp = options?.linkComponent;
   if (LinkComp) {
     return (
