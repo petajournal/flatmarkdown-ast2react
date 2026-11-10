@@ -129,12 +129,21 @@ function FmNodeInner({ node, context }: FmNodeProps) {
     case 'html_block':
       return <span dangerouslySetInnerHTML={{ __html: n.literal as string }} />;
 
-    case 'footnote_definition':
+    case 'footnote_definition': {
+      const name = n.name as string;
+      const label = (
+        <a href={`#fnref-${name}`} className="footnote-label">{`[${footnoteLabel(name)}]:`}</a>
+      );
+      const [first, ...rest] = children;
       return (
-        <div className="footnote" id={`fn-${n.name}`}>
-          {renderChildren(children, context)}
+        <div className="footnote" id={`fn-${name}`}>
+          <p>
+            {label} {renderChildren((first as { children?: AstNode[] }).children ?? [], context)}
+          </p>
+          {renderChildren(rest, context)}
         </div>
       );
+    }
 
     case 'alert':
       return (
