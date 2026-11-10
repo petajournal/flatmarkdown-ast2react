@@ -350,6 +350,12 @@ describe('FmNode', () => {
       expect(quote!.querySelector('p.alert-title')!.textContent).toBe('Warning');
       expect(quote!.textContent).toContain('Careful!');
     });
+
+    // タイトルが書かれていれば、それを使う
+    it('uses the custom title', () => {
+      const { container } = renderNode({ type: 'alert', alert_type: 'note', title: 'Heads up' });
+      expect(container.querySelector('p.alert-title')!.textContent).toBe('Heads up');
+    });
   });
 
   describe('subtext', () => {
