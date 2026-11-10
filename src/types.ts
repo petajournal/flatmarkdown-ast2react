@@ -20,9 +20,19 @@ export interface HashtagReactOptions {
   cssClass?: string;
 }
 
+export interface EmbedReactOptions {
+  /**
+   * An absolute URL that the URL of an embed is resolved against, as a browser resolves a
+   * relative URL against the address of the page. An absolute URL of an embed stays as it is.
+   * Default: none; the URL is used as written.
+   */
+  baseUrl?: string;
+}
+
 export interface ReactRenderOptions {
   wikilink?: WikiLinkReactOptions;
   hashtag?: HashtagReactOptions;
+  embed?: EmbedReactOptions;
 }
 
 export interface RenderContext {

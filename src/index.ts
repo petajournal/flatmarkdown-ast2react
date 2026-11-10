@@ -4,6 +4,7 @@ export type {
   ReactRenderOptions,
   WikiLinkReactOptions,
   HashtagReactOptions,
+  EmbedReactOptions,
   RenderContext,
 } from './types';
 export { defaultContext } from './types';

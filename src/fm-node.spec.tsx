@@ -571,6 +571,43 @@ describe('FmNode', () => {
       expect(img!.getAttribute('alt')).toBe('alt text');
       expect(img!.getAttribute('title')).toBe('Photo');
     });
+
+    // ページからの相対パスで書かれた画像は、baseUrlから解決する。ページと別のアドレスで動くアプリのため
+    it('resolves a relative URL against baseUrl of the embed options', () => {
+      const ctx = defaultContext({ embed: { baseUrl: 'http://journal.test:9000/pages/' } });
+      const { container } = renderNode({ type: 'embed', url: '../assets/pic.png', title: '' }, ctx);
+      expect(container.querySelector('img')!.getAttribute('src')).toBe(
+        'http://journal.test:9000/assets/pic.png',
+      );
+    });
+
+    // propsのwとhは、画像の幅と高さになる（`![alt](img.png#w=300&h=240)`）
+    it('uses w and h of the props as the width and the height', () => {
+      const { container } = renderNode({
+        type: 'embed',
+        url: 'pic.png',
+        title: '',
+        props: { w: '300', h: '240' },
+      });
+      const img = container.querySelector('img')!;
+      expect(img.getAttribute('width')).toBe('300');
+      expect(img.getAttribute('height')).toBe('240');
+    });
+
+    // 正の整数でないwやhは使わない。値のないフラグ（#w）や文字（#w=wide）である
+    it('ignores w and h that are not a positive whole number', () => {
+      const { container } = renderNode({
+        type: 'embed',
+        url: 'pic.png',
+        title: '',
+        props: { w: 'wide', h: true },
+      });
+      const img = container.querySelector('img')!;
+      expect(img.getAttribute('width')).toBeNull();
+      expect(img.getAttribute('height')).toBeNull();
+      const zero = renderNode({ type: 'embed', url: 'pic.png', title: '', props: { w: '0' } });
+      expect(zero.container.querySelector('img')!.getAttribute('width')).toBeNull();
+    });
   });
 
   describe('wikilink', () => {

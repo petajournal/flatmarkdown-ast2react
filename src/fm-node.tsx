@@ -35,6 +35,14 @@ function renderItemChildren(children: AstNode[], context: RenderContext) {
   ));
 }
 
+// The size of an embed in pixels, from a property such as `w` in `#w=300`. A property that
+// is not a positive whole number gives no size.
+function dimension(value: string | true | undefined): number | undefined {
+  if (typeof value !== 'string' || !/^\d+$/.test(value.trim())) return undefined;
+  const pixels = Number(value);
+  return pixels > 0 ? pixels : undefined;
+}
+
 function isHeaderRow(row: AstNode) {
   return row.type === 'table_row' && row.header;
 }
@@ -250,9 +258,19 @@ function FmNodeInner({ node, context }: FmNodeProps) {
         </a>
       );
 
-    // `props` are not used. How an app shows a video or a PDF differs from app to app.
-    case 'embed':
-      return <img src={node.url} alt={extractText(node)} title={node.title || undefined} />;
+    case 'embed': {
+      const baseUrl = context.options.embed?.baseUrl;
+      const src = baseUrl ? new URL(node.url, baseUrl).href : node.url;
+      return (
+        <img
+          src={src}
+          alt={extractText(node)}
+          title={node.title || undefined}
+          width={dimension(node.props?.w)}
+          height={dimension(node.props?.h)}
+        />
+      );
+    }
 
     case 'wikilink':
       return (
