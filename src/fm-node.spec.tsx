@@ -516,10 +516,11 @@ describe('FmNode', () => {
     });
   });
 
-  describe('image', () => {
-    it('renders <img> with src and alt', () => {
+  describe('embed', () => {
+    // embedは<img>になる。srcはurl、altは子のテキスト、titleはtitle
+    it('renders <img> with src, alt, and title', () => {
       const { container } = renderNode({
-        type: 'image',
+        type: 'embed',
         url: 'pic.png',
         title: 'Photo',
         children: [{ type: 'text', value: 'alt text' }],
