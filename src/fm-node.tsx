@@ -164,7 +164,11 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       );
 
     case 'subtext':
-      return <>{renderChildren(children, context)}</>;
+      return (
+        <p>
+          <sub>{renderChildren(children, context)}</sub>
+        </p>
+      );
 
     // ── Inline Nodes ──
 
