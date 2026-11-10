@@ -77,6 +77,12 @@ describe('FmNode', () => {
       const code = container.querySelector('code');
       expect(code!.className).toBe('');
     });
+
+    // 言語を書かないコードブロックのinfoは"text"になる。これは言語ではないので、クラスを付けない
+    it('no class when info is the default "text"', () => {
+      const { container } = renderNode({ type: 'code_block', fenced: true, info: 'text', literal: 'x' });
+      expect(container.querySelector('code')!.className).toBe('');
+    });
   });
 
   describe('block_quote', () => {
