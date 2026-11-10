@@ -144,6 +144,22 @@ describe('FmNode', () => {
       });
       expect(container.querySelector('ol')!.getAttribute('start')).toBe('3');
     });
+
+    // tightはlistが持つ。itemのtightは読まない（パーサーはitemのtightを常にfalseにする）
+    it('reads tight from the list, not from the item', () => {
+      const { container } = renderNode({
+        type: 'list',
+        list_type: 'bullet',
+        start: null,
+        tight: true,
+        delimiter: '',
+        children: [
+          { type: 'item', list_type: 'bullet', start: 0, tight: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'one' }] }] },
+        ],
+      });
+      expect(container.querySelector('li p')).toBeNull();
+      expect(container.querySelector('li')!.textContent).toContain('one');
+    });
   });
 
   describe('item', () => {
