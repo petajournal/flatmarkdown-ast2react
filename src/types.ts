@@ -16,6 +16,8 @@ export interface HashtagReactOptions {
    * Default: `hrefPrefix` of the wikilink options.
    */
   hrefPrefix?: string;
+  /** CSS class applied to hashtag anchors. Default: 'hashtag' */
+  cssClass?: string;
 }
 
 export interface ReactRenderOptions {

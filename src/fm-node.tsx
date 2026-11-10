@@ -272,7 +272,11 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       const prefix =
         context.options.hashtag?.hrefPrefix ?? context.options.wikilink?.hrefPrefix ?? '';
       return (
-        <PageLink href={prefix + node.value} className="hashtag" context={context}>
+        <PageLink
+          href={prefix + node.value}
+          className={context.options.hashtag?.cssClass ?? 'hashtag'}
+          context={context}
+        >
           {`#${node.value}`}
         </PageLink>
       );
