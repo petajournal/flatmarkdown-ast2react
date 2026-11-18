@@ -622,8 +622,9 @@ describe('FmNode', () => {
       expect(a!.textContent).toContain('My Page');
     });
 
-    it('uses hrefPrefix from options', () => {
-      const ctx = defaultContext({ wikilink: { hrefPrefix: '/wiki/' } });
+    // hrefは、テンプレートの{}にページ名を入れたものである
+    it('uses the href template of the options', () => {
+      const ctx = defaultContext({ wikilink: { href: '/wiki/{}' } });
       const { container } = renderNode(
         { type: 'wikilink', url: 'MyPage', children: [{ type: 'text', value: 'link' }] },
         ctx,
@@ -632,7 +633,8 @@ describe('FmNode', () => {
       expect(a!.getAttribute('href')).toBe('/wiki/MyPage');
     });
 
-    it('default prefix is empty string', () => {
+    // 既定のテンプレートでは、hrefはページ名だけである
+    it('has the page name alone as the href by default', () => {
       const { container } = renderNode({
         type: 'wikilink',
         url: 'MyPage',
@@ -656,7 +658,7 @@ describe('FmNode', () => {
       function CustomLink({ to, children, ...rest }: { to: string; children?: React.ReactNode; [k: string]: unknown }) {
         return <a href={to} data-custom="true" {...rest}>{children}</a>;
       }
-      const ctx = defaultContext({ wikilink: { linkComponent: CustomLink, hrefPrefix: '/p/' } });
+      const ctx = defaultContext({ wikilink: { linkComponent: CustomLink, href: '/p/{}' } });
       const { container } = renderNode(
         { type: 'wikilink', url: 'Page', children: [{ type: 'text', value: 'P' }] },
         ctx,
@@ -677,11 +679,11 @@ describe('FmNode', () => {
       expect(a!.textContent).toBe('#diary');
     });
 
-    // タグはページへのリンクなので、wikilinkのhrefPrefixを使う
-    it('uses hrefPrefix of the wikilink options', () => {
-      const ctx = defaultContext({ wikilink: { hrefPrefix: '/wiki/' } });
+    // wikilinkのテンプレートは、タグのhrefに使わない。Rustのflatmarkdown-ast2htmlと同じ既定である
+    it('does not use the href template of the wikilink options', () => {
+      const ctx = defaultContext({ wikilink: { href: '/wiki/{}' } });
       const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
-      expect(container.querySelector('a.hashtag')!.getAttribute('href')).toBe('/wiki/diary');
+      expect(container.querySelector('a.hashtag')!.getAttribute('href')).toBe('diary');
     });
 
     // SPAの遷移のため、wikilinkのlinkComponentを使う
@@ -689,7 +691,10 @@ describe('FmNode', () => {
       function CustomLink({ to, children, ...rest }: { to: string; children?: React.ReactNode; [k: string]: unknown }) {
         return <a href={to} data-custom="true" {...rest}>{children}</a>;
       }
-      const ctx = defaultContext({ wikilink: { linkComponent: CustomLink, hrefPrefix: '/p/' } });
+      const ctx = defaultContext({
+        wikilink: { linkComponent: CustomLink },
+        hashtag: { href: '/p/{}' },
+      });
       const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
       const a = container.querySelector('a[data-custom]');
       expect(a).toBeTruthy();
@@ -704,11 +709,11 @@ describe('FmNode', () => {
       expect(container.querySelector('a[data-hashtag="true"]')).toBeTruthy();
     });
 
-    // タグのページは、wikilinkと別の場所（タグのフォルダ）に置けるので、専用のhrefPrefixを持つ
-    it('uses hrefPrefix of the hashtag options instead of the one of wikilinks', () => {
+    // タグのページは、wikilinkと別の場所（タグのフォルダ）に置けるので、専用のテンプレートを持つ
+    it('uses the href template of the hashtag options', () => {
       const ctx = defaultContext({
-        wikilink: { hrefPrefix: '/pages/' },
-        hashtag: { hrefPrefix: '/pages/tags/' },
+        wikilink: { href: '/pages/{}' },
+        hashtag: { href: '/pages/tags/{}' },
       });
       const { container } = renderNode({ type: 'hashtag', value: 'diary' }, ctx);
       expect(container.querySelector('a.hashtag')!.getAttribute('href')).toBe('/pages/tags/diary');

@@ -2,6 +2,7 @@ import { memo, createElement } from 'react';
 import type { ReactNode } from 'react';
 import type { AlertNode, AstNode } from 'flatmarkdown-ast';
 import type { RenderContext } from './types';
+import { DEFAULT_HREF, hashtagHref, wikilinkHref } from './hrefs';
 import { extractText, footnoteLabel } from './utils';
 
 const ALERT_TITLES: Record<AlertNode['alert_type'], string> = {
@@ -48,7 +49,7 @@ function isHeaderRow(row: AstNode) {
 }
 
 interface PageLinkProps {
-  /** The link target, with the prefix of the options */
+  /** The link target, made from the template of the options */
   href: string;
   className?: string;
   /** true for a wikilink; a hashtag is told apart by its class */
@@ -275,7 +276,11 @@ function FmNodeInner({ node, context }: FmNodeProps) {
     case 'wikilink':
       return (
         <PageLink
-          href={(context.options.wikilink?.hrefPrefix ?? '') + node.url}
+          href={wikilinkHref(
+            context.options.wikilink?.href ?? DEFAULT_HREF,
+            context.options.wikilink?.fragmentPattern ?? '',
+            node.url,
+          )}
           className={context.options.wikilink?.cssClass || undefined}
           wikilink
           context={context}
@@ -285,13 +290,11 @@ function FmNodeInner({ node, context }: FmNodeProps) {
       );
 
     case 'hashtag': {
-      // A tag page can live in its own folder, so a hashtag has its own prefix. Without one,
-      // it links where a wikilink to a page of that name links.
-      const prefix =
-        context.options.hashtag?.hrefPrefix ?? context.options.wikilink?.hrefPrefix ?? '';
+      // A tag page can live in its own folder, so a hashtag has its own template. Its default
+      // is the one of flatmarkdown-ast2html, not the template of wikilinks.
       return (
         <PageLink
-          href={prefix + node.value}
+          href={hashtagHref(context.options.hashtag?.href ?? DEFAULT_HREF, node.value)}
           className={context.options.hashtag?.cssClass ?? 'hashtag'}
           context={context}
         >

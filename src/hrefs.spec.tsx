@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import type { AstNode } from 'flatmarkdown-ast';
 import { FmNode } from './fm-node';
 import { defaultContext, type ReactRenderOptions } from './types';
@@ -17,13 +18,13 @@ interface Case {
 const table = hrefs as { cases: Case[] };
 
 function renderedHref(c: Case): string | null {
-  const [node, options]: [AstNode, ReactRenderOptions] =
+  const wikilink: AstNode = { type: 'wikilink', url: c.name, children: [{ type: 'text', value: 'x' }] };
+  const hashtag: AstNode = { type: 'hashtag', value: c.name };
+  const options: ReactRenderOptions =
     c.kind === 'wikilink'
-      ? [
-          { type: 'wikilink', url: c.name, children: [{ type: 'text', value: 'x' }] },
-          { wikilink: { href: c.template, fragmentPattern: c.fragmentPattern } },
-        ]
-      : [{ type: 'hashtag', value: c.name }, { hashtag: { href: c.template } }];
+      ? { wikilink: { href: c.template, fragmentPattern: c.fragmentPattern } }
+      : { hashtag: { href: c.template } };
+  const node = c.kind === 'wikilink' ? wikilink : hashtag;
   const { container } = render(<FmNode node={node} context={defaultContext(options)} />);
   return container.querySelector('a')!.getAttribute('href');
 }

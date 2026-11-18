@@ -12,7 +12,7 @@ describe('defaultContext', () => {
   });
 
   it('stores provided options', () => {
-    const options = { wikilink: { hrefPrefix: '/wiki/' } };
+    const options = { wikilink: { href: '/wiki/{}' } };
     const ctx = defaultContext(options);
     expect(ctx.options).toBe(options);
   });

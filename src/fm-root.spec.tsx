@@ -34,7 +34,7 @@ describe('FmRoot', () => {
       ],
     };
     const { container } = render(
-      <FmRoot ast={ast} options={{ wikilink: { hrefPrefix: '/docs/', cssClass: 'my-link' } }} />,
+      <FmRoot ast={ast} options={{ wikilink: { href: '/docs/{}', cssClass: 'my-link' } }} />,
     );
     const a = container.querySelector('a[data-wikilink]');
     expect(a).toBeTruthy();
