@@ -4,18 +4,27 @@ import type { TableAlignment } from 'flatmarkdown-ast';
 export interface WikiLinkReactOptions {
   /** Custom link component (e.g. react-router's Link). Receives `to` and `children`. */
   linkComponent?: ComponentType<{ to: string; className?: string | null; children?: React.ReactNode }>;
-  /** Prefix prepended to the wikilink url for href/to. Default: '' */
-  hrefPrefix?: string;
+  /**
+   * The template of href/to. Every `{}` in it takes the name of the page, percent-encoded.
+   * Default: `'{}'`, the name alone.
+   */
+  href?: string;
+  /**
+   * The pattern of a fragment, as a regular expression. When it matches the whole text after
+   * the last `#` of the url, that text goes after the href as `#<fragment>`. Default: `''`,
+   * so every `#` is a part of the name.
+   */
+  fragmentPattern?: string;
   /** CSS class applied to wikilink anchors. */
   cssClass?: string;
 }
 
 export interface HashtagReactOptions {
   /**
-   * Prefix prepended to the tag name for href/to.
-   * Default: `hrefPrefix` of the wikilink options.
+   * The template of href/to. Every `{}` in it takes the tag name, percent-encoded.
+   * Default: `'{}'`, the tag name alone.
    */
-  hrefPrefix?: string;
+  href?: string;
   /** CSS class applied to hashtag anchors. Default: 'hashtag' */
   cssClass?: string;
 }
